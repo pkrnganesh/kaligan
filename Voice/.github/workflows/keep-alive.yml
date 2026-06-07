@@ -1,0 +1,35 @@
+name: Keep Backend Alive
+
+on:
+  schedule:
+    # Ping every 10 minutes (Render free tier spins down after 15 minutes of inactivity)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Ping Backend Server
+        run: |
+          echo "🏓 Pinging backend server..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://kreta-bandhu-backend.onrender.com/)
+          
+          if [ $response -eq 200 ]; then
+            echo "✅ Backend is alive! (Status: $response)"
+          else
+            echo "⚠️ Backend returned status: $response"
+          fi
+          
+      - name: Ping Health Endpoint
+        run: |
+          echo "🔍 Checking health endpoint..."
+          curl -X GET https://kreta-bandhu-backend.onrender.com/ \
+            -H "Accept: application/json" \
+            --max-time 30 \
+            || echo "⚠️ Health check timed out (server might be cold starting)"
+          
+      - name: Log Timestamp
+        run: |
+          echo "⏰ Last ping: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"

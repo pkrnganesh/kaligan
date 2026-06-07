@@ -1,0 +1,30 @@
+@import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Schibsted+Grotesk:wght@500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { color-scheme: light; }
+  html, body, #root { height: 100%; }
+  body { @apply bg-canvas text-ink font-sans antialiased; font-size: 15px; margin: 0; }
+  h1, h2, h3, h4 { @apply font-display; letter-spacing: -0.02em; }
+  *:focus-visible { outline: 2px solid #5FC9B0; outline-offset: 2px; }
+}
+
+@layer components {
+  .card { @apply bg-surface border border-line rounded-xl2 shadow-soft; }
+  .btn { @apply inline-flex items-center justify-center gap-2 font-semibold text-sm rounded-full px-5 py-2.5 cursor-pointer transition border border-transparent; }
+  .btn-primary { @apply bg-emerald-600 text-white hover:bg-emerald-700; }
+  .btn-ghost { @apply bg-surface text-ink border-line hover:border-mint-300; }
+  .input { @apply w-full text-[14.5px] text-ink bg-surface border border-line rounded-xl px-3.5 py-2.5 outline-none transition focus:border-teal-400; }
+  .field-label { @apply block text-[12.5px] font-semibold text-ink-muted mb-1.5; }
+  .pulse-dot { animation: pulse 2.4s infinite; }
+}
+
+@keyframes pulse { 0% { box-shadow:0 0 0 0 rgba(19,138,99,.45) } 70% { box-shadow:0 0 0 6px rgba(19,138,99,0) } 100% { box-shadow:0 0 0 0 rgba(19,138,99,0) } }
+@keyframes ring { 0% { transform:scale(.55); opacity:.7 } 100% { transform:scale(1.15); opacity:0 } }
+@keyframes eq { 0%,100% { height:7px } 50% { height:24px } }
+@keyframes fadeup { to { opacity:1; transform:none } }
+.fadeup { opacity:0; transform:translateY(10px); animation:fadeup .5s cubic-bezier(.2,.7,.3,1) forwards; }
+@media (prefers-reduced-motion: reduce) { .fadeup,.pulse-dot { animation:none !important; opacity:1; transform:none } }

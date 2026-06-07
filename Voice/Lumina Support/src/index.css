@@ -1,0 +1,158 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@theme {
+  --color-copper-50: #fff5f5;
+  --color-copper-100: #ffe3e3;
+  --color-copper-200: #ffc9c9;
+  --color-copper-300: #ffa8a8;
+  --color-copper-400: #ff6b6b;
+  --color-copper-500: #fa5252;
+  --color-copper-600: #e03131;
+  --color-copper-700: #c92a2a;
+  --color-copper-800: #b01e1e;
+  --color-copper-900: #821414;
+  --color-copper-950: #400808;
+
+  --color-cyan-400: #ff4d4d;
+  --color-cyan-500: #cc0000;
+
+  --color-charcoal-900: #050506;
+  --color-charcoal-800: #0c0c0e;
+  --color-charcoal-700: #161619;
+
+  --font-sans: 'Outfit', sans-serif;
+  --font-heading: 'Syne', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-shine: shine 1s linear infinite;
+  --animate-gradient-x: gradient-x 15s ease infinite;
+  --animate-gradient-xy: gradient-xy 15s ease infinite;
+  --animate-scale-in: scale-in 0.3s ease-out forwards;
+
+  @keyframes glow {
+    0% {
+      box-shadow: 0 0 5px #fa5252, 0 0 10px #fa5252;
+    }
+
+    100% {
+      box-shadow: 0 0 20px #fa5252, 0 0 30px #fa5252;
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes shine {
+    from {
+      transform: translateX(-100%);
+    }
+
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes gradient-x {
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes gradient-xy {
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes scale-in {
+    0% {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-charcoal-900 text-white font-sans overflow-x-hidden;
+  }
+
+  /* Performance optimizations for mobile */
+  @media (max-width: 768px) {
+    * {
+      /* Disable smooth scrolling on mobile for better performance */
+      scroll-behavior: auto !important;
+    }
+    
+    /* Reduce animation complexity on mobile */
+    *[class*="animate-"],
+    *[class*="transition-"] {
+      animation-duration: 0.3s !important;
+      transition-duration: 0.3s !important;
+    }
+
+    /* Disable blur effects on mobile (expensive) */
+    *[class*="blur-"] {
+      filter: none !important;
+      backdrop-filter: none !important;
+    }
+
+    /* Disable complex shadows on mobile */
+    *[class*="shadow-"] {
+      box-shadow: none !important;
+    }
+  }
+
+  /* Hardware acceleration for animations */
+  *[class*="animate-"],
+  *[class*="transition-"] {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-charcoal-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-copper-900 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-copper-700;
+}
