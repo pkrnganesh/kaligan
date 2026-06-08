@@ -8,7 +8,7 @@ import VoiceAgents from "./pages/VoiceAgents";
 import VoiceAgentBuilder from "./pages/VoiceAgentBuilder";
 import Widget from "./pages/Widget";
 import { ChatAgent, Settings, Onboarding } from "./pages/Misc";
-import { Login, Signup, Forgot, MarketingShell, Home, MarketingPage } from "./Public";
+import { Login, Signup, Forgot, MarketingShell, Home, Features, Pricing, About, Contact } from "./Public";
 
 export default function App() {
   return (
@@ -16,10 +16,10 @@ export default function App() {
       {/* marketing */}
       <Route element={<MarketingShell />}>
         <Route path="/" element={<Home />} />
-        <Route path="/features" element={<MarketingPage title="Features" />} />
-        <Route path="/pricing" element={<MarketingPage title="Pricing" />} />
-        <Route path="/about" element={<MarketingPage title="About" />} />
-        <Route path="/contact" element={<MarketingPage title="Contact" />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
       </Route>
 
       {/* auth */}
