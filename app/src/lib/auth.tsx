@@ -12,6 +12,7 @@ interface Workspace {
   id: string;
   name: string;
   publicKey: string;
+  plan?: string;
 }
 
 interface AuthContextType {
@@ -21,6 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (companyName: string, websiteUrl: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +31,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshSession = async () => {
+    try {
+      const res = await api.get('/auth/me');
+      if (res && res.user && res.workspace) {
+        setUser(res.user);
+        setWorkspace(res.workspace);
+      }
+    } catch (err) {
+      console.error('Session refresh failed:', err);
+    }
+  };
 
   useEffect(() => {
     async function restoreSession() {
@@ -98,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, workspace, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, workspace, loading, login, signup, logout, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

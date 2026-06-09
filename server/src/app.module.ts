@@ -9,6 +9,11 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RagModule } from './rag/rag.module';
 import { KbModule } from './kb/kb.module';
+import { LlmModule } from './llm/llm.module';
+import { AgentModule } from './agent/agent.module';
+import { ConversationModule } from './conversation/conversation.module';
+import { LeadModule } from './lead/lead.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -21,6 +26,11 @@ import { KbModule } from './kb/kb.module';
     AuthModule,
     RagModule,
     KbModule,
+    LlmModule,
+    AgentModule,
+    ConversationModule,
+    LeadModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

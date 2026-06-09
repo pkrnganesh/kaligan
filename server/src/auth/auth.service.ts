@@ -239,4 +239,20 @@ export class AuthService {
       },
     };
   }
+
+  async updateMe(userId: string, data: { name?: string; email?: string }) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.email !== undefined ? { email: data.email.toLowerCase() } : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
+  }
 }

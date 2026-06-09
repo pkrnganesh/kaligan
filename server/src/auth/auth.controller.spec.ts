@@ -5,6 +5,26 @@ import { AppModule } from '../app.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 
+// Mock fastembed module virtual imports to bypass ONNX download during tests
+jest.mock('fastembed', () => {
+  return {
+    FlagEmbedding: {
+      init: jest.fn().mockResolvedValue({
+        embed: jest.fn().mockImplementation((texts: string[]) => {
+          const dummyBatch = texts.map(() => Array(384).fill(0.25));
+          return (async function* () {
+            yield dummyBatch;
+          })();
+        }),
+        queryEmbed: jest.fn().mockResolvedValue(Array(384).fill(0.25)),
+      }),
+    },
+    EmbeddingModel: {
+      BGESmallENV15: 'bge-small-en-v1.5',
+    },
+  };
+}, { virtual: true });
+
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
