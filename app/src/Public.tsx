@@ -1,10 +1,65 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import type { ReactNode, CSSProperties } from "react";
 import * as I from "./components/icons";
+import { useAuth } from "./lib/auth";
+import { api } from "./lib/api";
 
 /* ============================== AUTH ============================== */
 function AuthShell({ title, sub, cta, foot, to }: { title: string; sub: string; cta: string; foot: ReactNode; to: string }) {
   const nav = useNavigate();
+  const { login, signup } = useAuth();
+
+  const [companyName, setCompanyName] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      if (to === "signup") {
+        if (!companyName.trim()) {
+          throw new Error("Company name is required");
+        }
+        if (!email.trim()) {
+          throw new Error("Email is required");
+        }
+        if (!password.trim() || password.length < 6) {
+          throw new Error("Password must be at least 6 characters long");
+        }
+        await signup(companyName, websiteUrl, email, password);
+        nav("/app/onboarding");
+      } else if (to === "login") {
+        if (!email.trim()) {
+          throw new Error("Email is required");
+        }
+        if (!password.trim()) {
+          throw new Error("Password is required");
+        }
+        await login(email, password);
+        nav("/app");
+      } else if (to === "forgot") {
+        if (!email.trim()) {
+          throw new Error("Email is required");
+        }
+        await api.post("/auth/forgot-password", { email });
+        setSuccess("If that email is registered, we've logged a password reset link in the server console.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen grid place-items-center px-4 relative overflow-hidden">
       <Glow className="-top-40 -right-32" />
@@ -16,10 +71,83 @@ function AuthShell({ title, sub, cta, foot, to }: { title: string; sub: string; 
         <div className="card p-7">
           <h1 className="font-display text-xl font-bold">{title}</h1>
           <p className="text-ink-muted text-[14px] mt-1 mb-5">{sub}</p>
-          {to.includes("signup") && <><label className="field-label">Company name</label><input className="input mb-3" placeholder="Acme Co" /><label className="field-label">Website URL</label><input className="input mb-3" placeholder="https://acme.com" /></>}
-          <label className="field-label">Email</label><input className="input mb-3" placeholder="you@company.com" />
-          {!to.includes("forgot") && <><label className="field-label">Password</label><input type="password" className="input mb-4" placeholder="••••••••" /></>}
-          <button className="btn btn-primary w-full" onClick={() => nav("/app")}>{cta}</button>
+
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-[13px] font-medium leading-relaxed">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-[13px] font-medium leading-relaxed">
+                {success}
+              </div>
+            )}
+
+            {to.includes("signup") && (
+              <>
+                <label className="field-label">Company name</label>
+                <input
+                  required
+                  className="input mb-3"
+                  placeholder="Acme Co"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  disabled={loading}
+                />
+                <label className="field-label">Website URL</label>
+                <input
+                  className="input mb-3"
+                  placeholder="https://acme.com"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  disabled={loading}
+                />
+              </>
+            )}
+
+            <label className="field-label">Email</label>
+            <input
+              required
+              type="email"
+              className="input mb-3"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+            />
+
+            {!to.includes("forgot") && (
+              <>
+                <label className="field-label">Password</label>
+                <input
+                  required
+                  type="password"
+                  className="input mb-4"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                />
+              </>
+            )}
+
+            <button
+              type="submit"
+              className="btn btn-primary w-full flex items-center justify-center gap-2"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                cta
+              )}
+            </button>
+          </form>
+
           <div className="text-center text-[13px] text-ink-muted mt-4">{foot}</div>
         </div>
         <p className="text-center text-[12px] text-ink-muted mt-4">No credit card required · Live in 5 minutes</p>

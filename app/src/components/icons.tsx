@@ -27,4 +27,15 @@ export const ArrowRight = (p: SVGProps<SVGSVGElement>) => (<svg {...base(p)} str
 export const Phone = (p: SVGProps<SVGSVGElement>) => (<svg {...base(p)}><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>);
 export const Play = (p: SVGProps<SVGSVGElement>) => (<svg width={12} height={12} viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M8 5v14l11-7z"/></svg>);
 export const Plus = (p: SVGProps<SVGSVGElement>) => (<svg {...base(p)} strokeWidth={2}><path d="M12 5v14M5 12h14"/></svg>);
-export const Bolt = (p: SVGProps<SVGSVGElement>) => (<svg width={18} height={18} viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>);
+export const Bolt = (p: SVGProps<SVGSVGElement>) => (
+  <svg width={18} height={18} viewBox="0 0 24 24" fill="currentColor" {...p}>
+    <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />
+  </svg>
+);
+export const LogOut = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);

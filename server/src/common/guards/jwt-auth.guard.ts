@@ -1,12 +1,15 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
-export class JwtAuthGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  constructor(private reflector: Reflector) {
+    super();
+  }
 
-  canActivate(context: ExecutionContext): boolean {
+  canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -14,14 +17,13 @@ export class JwtAuthGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
+    return super.canActivate(context);
+  }
 
-    const request = context.switchToHttp().getRequest();
-    // Stub for Phase 0: attach a mock user to the request
-    request.user = {
-      userId: 'mock-user-id',
-      workspaceId: 'mock-workspace-id',
-      role: 'owner',
-    };
-    return true;
+  handleRequest(err: any, user: any, info: any) {
+    if (err || !user) {
+      throw err || new UnauthorizedException('Please authenticate first');
+    }
+    return user;
   }
 }

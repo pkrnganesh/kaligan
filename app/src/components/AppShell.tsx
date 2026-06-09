@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import type { ReactNode } from "react";
 import * as I from "./icons";
+import { useAuth } from "../lib/auth";
 
 function Item({ to, icon, label, count, badge }:
   { to: string; icon: ReactNode; label: string; count?: number; badge?: string }) {
@@ -29,12 +30,14 @@ function Label({ children }: { children: ReactNode }) {
 }
 
 export default function AppShell() {
+  const { workspace, logout } = useAuth();
+
   return (
     <div className="grid grid-cols-[248px_1fr] min-h-screen">
       <aside className="bg-surface-2 border-r border-line flex flex-col p-[14px] gap-1.5 sticky top-0 h-screen">
         <button className="flex items-center gap-3 p-2.5 border border-line rounded-2xl bg-surface hover:border-mint-300 transition mb-2.5 text-left">
           <span className="w-8 h-8 rounded-[9px] bg-emerald-600 grid place-items-center shrink-0"><I.Sparkle width={17} height={17} fill="#fff" /></span>
-          <span className="flex-1 leading-tight"><span className="font-semibold text-sm block">Acme Co</span><span className="text-ink-muted text-[11.5px]">kaliganai workspace</span></span>
+          <span className="flex-1 leading-tight"><span className="font-semibold text-sm block">{workspace?.name || "Acme Co"}</span><span className="text-ink-muted text-[11.5px]">kaliganai workspace</span></span>
           <I.Chevron className="text-ink-muted" />
         </button>
 
@@ -55,6 +58,13 @@ export default function AppShell() {
             <span className="ml-auto flex gap-1">{[0,1,2,3,4].map(i => <i key={i} className="w-1.5 h-1.5 rounded-full bg-emerald-600" />)}</span>
           </div>
           <Item to="/app/settings" icon={<I.Cog />} label="Settings" />
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-full text-sm font-medium text-ink hover:bg-emerald-50 hover:text-emerald-700 transition w-full text-left"
+          >
+            <span className="text-ink-muted group-hover:text-emerald-600"><I.LogOut /></span>
+            <span className="flex-1">Log out</span>
+          </button>
         </div>
       </aside>
 
