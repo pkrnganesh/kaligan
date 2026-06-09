@@ -16,3 +16,4 @@ lerna-debug.log*
 Thumbs.db
 
 /generated/prisma
+local_cache/

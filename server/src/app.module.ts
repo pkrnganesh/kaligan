@@ -7,6 +7,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { RagModule } from './rag/rag.module';
+import { KbModule } from './kb/kb.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     PrismaModule,
     HealthModule,
     AuthModule,
+    RagModule,
+    KbModule,
   ],
   controllers: [AppController],
   providers: [
