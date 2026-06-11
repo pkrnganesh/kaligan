@@ -585,6 +585,44 @@ export function About() {
 
 /* ============================== CONTACT =========================== */
 export function Contact() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      if (!name.trim()) throw new Error("Name is required");
+      if (!email.trim()) throw new Error("Email is required");
+      if (!message.trim()) throw new Error("Message is required");
+
+      await api.post("/public/contact", {
+        name,
+        email,
+        websiteUrl: websiteUrl || undefined,
+        message,
+      });
+
+      setSuccess("Thank you! We've received your note and our team will get back to you shortly.");
+      setName("");
+      setEmail("");
+      setWebsiteUrl("");
+      setMessage("");
+    } catch (err: any) {
+      setError(err.message || "Failed to submit message. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main>
       <section className="relative overflow-hidden">
@@ -599,14 +637,64 @@ export function Contact() {
               <div className="flex items-center gap-3"><span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center"><I.Bolt width={16} height={16} /></span> Avg. reply time under 24 hours</div>
             </div>
           </div>
-          <div className="card p-6">
-            <label className="field-label">Name</label><input className="input mb-3" placeholder="Jane Doe" />
-            <label className="field-label">Work email</label><input className="input mb-3" placeholder="you@company.com" />
-            <label className="field-label">Company website</label><input className="input mb-3" placeholder="https://acme.com" />
+          <form onSubmit={handleSubmit} className="card p-6 w-full">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-[13px] font-medium leading-relaxed">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-[13px] font-medium leading-relaxed">
+                {success}
+              </div>
+            )}
+            <label className="field-label">Name</label>
+            <input
+              required
+              className="input mb-3"
+              placeholder="Jane Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={loading}
+            />
+            <label className="field-label">Work email</label>
+            <input
+              required
+              type="email"
+              className="input mb-3"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+            />
+            <label className="field-label">Company website</label>
+            <input
+              className="input mb-3"
+              placeholder="https://acme.com"
+              value={websiteUrl}
+              onChange={(e) => setWebsiteUrl(e.target.value)}
+              disabled={loading}
+            />
             <label className="field-label">How can we help?</label>
-            <textarea className="input min-h-[110px] resize-y mb-4" placeholder="I run an agency and want to white-label this for clients…" />
-            <button className="btn btn-primary w-full">Send message <I.ArrowRight width={15} height={15} /></button>
-          </div>
+            <textarea
+              required
+              className="input min-h-[110px] resize-y mb-4"
+              placeholder="I run an agency and want to white-label this for clients…"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              disabled={loading}
+            />
+            <button type="submit" className="btn btn-primary w-full flex items-center justify-center gap-2" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>Send message <I.ArrowRight width={15} height={15} /></>
+              )}
+            </button>
+          </form>
         </div>
       </section>
     </main>

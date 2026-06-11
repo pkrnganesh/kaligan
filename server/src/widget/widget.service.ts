@@ -14,7 +14,7 @@ export class WidgetService {
       throw new NotFoundException('Workspace not found');
     }
 
-    let textAgent = null;
+    let textAgent: any = null;
     if (agentId) {
       textAgent = await this.prisma.agent.findFirst({
         where: { id: agentId, workspaceId, kind: 'chat' },

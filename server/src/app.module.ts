@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { PublicRateLimiterGuard } from './common/guards/public-rate-limiter.guard';
 import { RagModule } from './rag/rag.module';
 import { KbModule } from './kb/kb.module';
 import { LlmModule } from './llm/llm.module';
@@ -42,6 +43,10 @@ import { WidgetModule } from './widget/widget.module';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PublicRateLimiterGuard,
     },
   ],
 })
