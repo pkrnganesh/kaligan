@@ -1,0 +1,19 @@
+KaliGan AI Company Information Document
+
+Overview:
+KaliGan AI is an advanced multi-tenant AI lead-capture platform that integrates chat and voice capabilities. It helps businesses convert visitors into qualified, scored leads automatically.
+
+Founders & Leadership:
+The company was founded in 2026 by Parth and Ganesh. The research and engineering headquarters are located in Bangalore, India.
+
+Contact & Support:
+For general inquiries, email info@kaligan.ai.
+For customer support, email support@kaligan.ai. Support operations are active 24/7.
+
+Product Pricing & Plans:
+- Starter Plan: $49/month, includes 1 voice agent, 1 chat agent, and 500 qualification minutes.
+- Growth Plan: $149/month, includes 3 voice agents, 3 chat agents, unlimited RAG documents, and priority email support.
+- Enterprise Plan: Custom pricing, includes white-labeling, custom SLAs, and dedicated compute instances.
+
+Refund Policy:
+KaliGan offers a strict 14-day money-back guarantee. If you are not satisfied with the product, you can request a full refund within 14 days of your purchase by emailing support@kaligan.ai. No questions asked.

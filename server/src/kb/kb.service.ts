@@ -147,9 +147,24 @@ export class KbService {
       if (payload.fileBuffer) {
         if (payload.url) {
           // It's a PDF file parsed via buffer
-          const parseFn = typeof pdf === 'function' ? (pdf as any) : (pdf as any).default;
-          const parsed = await parseFn(payload.fileBuffer);
-          text = parsed.text;
+          if (pdf && (pdf as any).PDFParse) {
+            const PDFParseClass = (pdf as any).PDFParse;
+            const uint8 = new Uint8Array(
+              payload.fileBuffer.buffer,
+              payload.fileBuffer.byteOffset,
+              payload.fileBuffer.byteLength
+            );
+            const parser = new PDFParseClass(uint8);
+            const parsed = await parser.getText();
+            text = parsed.text;
+          } else {
+            const parseFn = typeof pdf === 'function' ? (pdf as any) : (pdf as any).default;
+            if (typeof parseFn !== 'function') {
+              throw new Error('PDF parsing library is not loaded or configured correctly.');
+            }
+            const parsed = await parseFn(payload.fileBuffer);
+            text = parsed.text;
+          }
         } else {
           // Plain text file
           text = payload.fileBuffer.toString('utf-8');
