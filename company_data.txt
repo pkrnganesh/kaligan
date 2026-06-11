@@ -4,7 +4,7 @@ Overview:
 KaliGan AI is an advanced multi-tenant AI lead-capture platform that integrates chat and voice capabilities. It helps businesses convert visitors into qualified, scored leads automatically.
 
 Founders & Leadership:
-The company was founded in 2026 by Parth and Ganesh. The research and engineering headquarters are located in Bangalore, India.
+The company was founded in 2026 by RamGanesh. The research and engineering headquarters are located in Bangalore, India.
 
 Contact & Support:
 For general inquiries, email info@kaligan.ai.
