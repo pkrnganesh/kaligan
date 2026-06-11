@@ -144,7 +144,11 @@ export class ConversationService {
     const workspaceName = workspace?.name || 'KaliGan Corp';
 
     // 3. RAG retrieve context
-    const ragResult = await this.kbService.queryKb(workspaceId, message, 5);
+    let documentIds: string[] | undefined = undefined;
+    if (agent && Array.isArray(agent.connectedKbDocumentIds) && agent.connectedKbDocumentIds.length > 0) {
+      documentIds = agent.connectedKbDocumentIds as string[];
+    }
+    const ragResult = await this.kbService.queryKb(workspaceId, message, 5, 0.35, documentIds);
 
     // 4. Retrieve message history
     const existingMessages = await this.prisma.message.findMany({
@@ -321,7 +325,11 @@ export class ConversationService {
     const workspaceName = workspace?.name || 'KaliGan Corp';
 
     // RAG retrieve context
-    const ragResult = await this.kbService.queryKb(workspaceId, message, 5);
+    let documentIds: string[] | undefined = undefined;
+    if (agent && Array.isArray(agent.connectedKbDocumentIds) && agent.connectedKbDocumentIds.length > 0) {
+      documentIds = agent.connectedKbDocumentIds as string[];
+    }
+    const ragResult = await this.kbService.queryKb(workspaceId, message, 5, 0.35, documentIds);
 
     // Call Gemini
     const reply = await this.llmService.generateChatReply(

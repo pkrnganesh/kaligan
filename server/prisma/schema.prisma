@@ -15,6 +15,7 @@ model Workspace {
   brandColor String?  @default("#0E7A5F") @map("brand_color")
   publicKey  String   @unique @map("public_key")
   plan       String   @default("starter")
+  lastWidgetPingAt DateTime? @map("last_widget_ping_at") @db.Timestamptz
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -107,6 +108,7 @@ model Agent {
   speakingSpeed  String?  @default("natural") @map("speaking_speed")
   channels       Json?    @default("{\"web\":true,\"phone\":false}")
   captureFields  Json?    @default("[\"name\",\"email\"]") @map("capture_fields")
+  connectedKbDocumentIds Json?    @default("[]") @map("connected_kb_document_ids")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 

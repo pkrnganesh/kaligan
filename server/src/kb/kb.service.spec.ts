@@ -161,4 +161,52 @@ describe('KbService Integration', () => {
     });
     expect(docRecord).toBeNull();
   });
+
+  it('should restrict queries to only connectedKbDocumentIds', async () => {
+    // 1. Ingest Doc 1
+    const doc1 = await service.createDocument(
+      workspaceIdA,
+      'Doc 1',
+      'FAQ',
+      {
+        faqItems: [
+          { q: 'What is the color of the sky?', a: 'The sky is blue.' },
+        ],
+      },
+    );
+    // 2. Ingest Doc 2
+    const doc2 = await service.createDocument(
+      workspaceIdA,
+      'Doc 2',
+      'FAQ',
+      {
+        faqItems: [
+          { q: 'What is the color of grass?', a: 'Grass is green.' },
+        ],
+      },
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const updatedDoc1 = await prisma.kbDocument.findUnique({ where: { id: doc1.id } });
+    const updatedDoc2 = await prisma.kbDocument.findUnique({ where: { id: doc2.id } });
+    expect(updatedDoc1?.status).toBe('ready');
+    expect(updatedDoc2?.status).toBe('ready');
+
+    // Query with restriction to doc1
+    const queryResult1 = await service.queryKb(workspaceIdA, 'color', 5, 0.1, [doc1.id]);
+    const contents1 = queryResult1.chunks.map(c => c.content.toLowerCase());
+    expect(contents1.some(c => c.includes('sky is blue'))).toBe(true);
+    expect(contents1.some(c => c.includes('grass is green'))).toBe(false);
+
+    // Query with restriction to doc2
+    const queryResult2 = await service.queryKb(workspaceIdA, 'color', 5, 0.1, [doc2.id]);
+    const contents2 = queryResult2.chunks.map(c => c.content.toLowerCase());
+    expect(contents2.some(c => c.includes('grass is green'))).toBe(true);
+    expect(contents2.some(c => c.includes('sky is blue'))).toBe(false);
+
+    // Clean up
+    await service.deleteDocument(workspaceIdA, doc1.id);
+    await service.deleteDocument(workspaceIdA, doc2.id);
+  });
 });

@@ -1,17 +1,41 @@
 import { useState } from "react";
 import { PageHead, Card } from "../components/ui";
 import * as I from "../components/icons";
+import { useAuth } from "../lib/auth";
+import { api } from "../lib/api";
 
 const platforms = ["HTML", "React", "Next.js", "WordPress", "Shopify"];
-const snippet = `<script src="https://cdn.kaligan.ai/w.js" data-id="ws_8fa3"></script>`;
 
 export default function Widget() {
+  const { workspace } = useAuth();
   const [plat, setPlat] = useState("WordPress");
   const [copied, setCopied] = useState(false);
   const [verify, setVerify] = useState<"idle" | "checking" | "ok">("idle");
 
-  const copy = () => { navigator.clipboard?.writeText(snippet); setCopied(true); setTimeout(() => setCopied(false), 1800); };
-  const doVerify = () => { setVerify("checking"); setTimeout(() => setVerify("ok"), 1600); };
+  const snippet = `<script src="${window.location.origin}/w.js" data-key="${workspace?.publicKey || ""}"></script>`;
+
+  const copy = () => {
+    navigator.clipboard?.writeText(snippet);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
+  const doVerify = async () => {
+    setVerify("checking");
+    try {
+      // Small timeout to give user feedback of loading state
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await api.post("/widget/verify");
+      if (res && res.installed) {
+        setVerify("ok");
+      } else {
+        setVerify("idle");
+      }
+    } catch (err) {
+      console.error("Verification failed:", err);
+      setVerify("idle");
+    }
+  };
 
   const steps = ["Verify site", "Get code", "Install", "Verify"];
   return (

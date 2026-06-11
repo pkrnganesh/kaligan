@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { RagService } from '../rag/rag.service';
 import { Subject } from 'rxjs';
 import * as pdf from 'pdf-parse';
@@ -315,9 +316,14 @@ export class KbService {
   /**
    * Retrieve semantically relevant context chunks from pgvector
    */
-  async queryKb(workspaceId: string, query: string, topK = 5, threshold = 0.35) {
+  async queryKb(workspaceId: string, query: string, topK = 5, threshold = 0.35, documentIds?: string[]) {
     const qv = await this.ragService.generateQueryEmbedding(query);
     const queryVectorString = `[${qv.join(',')}]`;
+
+    let docFilter = Prisma.empty;
+    if (documentIds && documentIds.length > 0) {
+      docFilter = Prisma.sql`AND c.document_id::text IN (${Prisma.join(documentIds)})`;
+    }
 
     // Retrieve similarity results from pgvector
     const rows = await this.prisma.$queryRaw<any[]>`
@@ -329,6 +335,7 @@ export class KbService {
       FROM kb_chunks c
       JOIN kb_documents d ON c.document_id = d.id
       WHERE c.workspace_id = ${workspaceId}::uuid
+      ${docFilter}
       ORDER BY c.embedding <=> ${queryVectorString}::vector
       LIMIT ${topK}
     `;

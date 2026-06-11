@@ -557,6 +557,24 @@ export function Onboarding() {
   const [inputMsg, setInputMsg] = useState("");
   const [sending, setSending] = useState(false);
 
+  const [verifyStatus, setVerifyStatus] = useState<"idle" | "checking" | "ok" | "failed">("idle");
+
+  const handleVerify = async () => {
+    setVerifyStatus("checking");
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await api.post("/widget/verify");
+      if (res && res.installed) {
+        setVerifyStatus("ok");
+      } else {
+        setVerifyStatus("failed");
+      }
+    } catch (err) {
+      console.error("Verification failed:", err);
+      setVerifyStatus("failed");
+    }
+  };
+
   // Poll or check if the workspace has ready documents in Step 1
   useEffect(() => {
     if (step !== 1) return;
@@ -808,9 +826,9 @@ export function Onboarding() {
         {/* STEP 4: Go Live */}
         {step === 4 && (
           <div className="space-y-4">
-            <h2 className="font-display text-2xl font-bold">Deploy your widget</h2>
+            <h2 className="font-display text-2xl font-bold">Deploy & Verify widget</h2>
             <p className="text-ink-muted max-w-md mx-auto text-sm">
-              Embed this simple script tag into the HTML head of your website to go live.
+              Embed this simple script tag into the HTML body of your website to go live.
             </p>
             <div className="max-w-lg mx-auto mt-4 text-left">
               <pre className="bg-surface-2 border border-line p-3 rounded-lg text-xs font-mono select-all overflow-x-auto">
@@ -820,11 +838,22 @@ export function Onboarding() {
             <p className="text-ink-muted text-xs max-w-md mx-auto mt-2">
               Once installed, the floating bubble chat assistant will interact with your visitor directly.
             </p>
+            
+            <div className="border-t border-line mt-6 pt-5 max-w-lg mx-auto flex flex-col items-center gap-3">
+              <div className="flex items-center gap-3">
+                <button onClick={handleVerify} className="btn btn-primary" disabled={verifyStatus === "checking"}>
+                  {verifyStatus === "checking" ? "Checking…" : verifyStatus === "ok" ? "✓ Installed" : "Verify installation"}
+                </button>
+                {verifyStatus === "ok" && <span className="text-success text-[13.5px] font-semibold">✓ Connected!</span>}
+                {verifyStatus === "failed" && <span className="text-hot text-[13.5px] font-semibold">Widget not detected yet. Make sure to embed and reload the page.</span>}
+              </div>
+            </div>
+
             <div className="flex justify-center gap-3 mt-8">
               <button className="btn border" onClick={() => setStep(3)}>
                 Back
               </button>
-              <button className="btn btn-primary" onClick={() => setStep(5)}>
+              <button className="btn btn-primary" onClick={() => setStep(5)} disabled={verifyStatus !== "ok"}>
                 Proceed to Live
               </button>
             </div>

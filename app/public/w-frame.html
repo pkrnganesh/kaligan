@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KaliGanAI Chat Integration</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const key = urlParams.get('key');
+      const agent = urlParams.get('agent');
+
+      if (!key) {
+        document.body.innerHTML = '<div style="padding: 20px; color: #ef4444; text-align: center; font-size: 14px;">Error: Missing workspace key parameter.</div>';
+        return;
+      }
+
+      // Load widget dynamically with inline mode
+      const script = document.createElement('script');
+      // Resolve path relative to current domain
+      script.src = window.location.origin + '/w.js';
+      script.setAttribute('data-key', key);
+      script.setAttribute('data-mode', 'inline');
+      if (agent) {
+        script.setAttribute('data-agent', agent);
+      }
+      document.body.appendChild(script);
+    })();
+  </script>
+</body>
+</html>

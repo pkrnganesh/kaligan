@@ -14,6 +14,8 @@ import { AgentModule } from './agent/agent.module';
 import { ConversationModule } from './conversation/conversation.module';
 import { LeadModule } from './lead/lead.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { VoiceModule } from './voice/voice.module';
+import { WidgetModule } from './widget/widget.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
     ConversationModule,
     LeadModule,
     DashboardModule,
+    VoiceModule,
+    WidgetModule,
   ],
   controllers: [AppController],
   providers: [

@@ -8,7 +8,9 @@ import Knowledge from "./pages/Knowledge";
 import VoiceAgents from "./pages/VoiceAgents";
 import VoiceAgentBuilder from "./pages/VoiceAgentBuilder";
 import Widget from "./pages/Widget";
-import { ChatAgent, Settings, Onboarding } from "./pages/Misc";
+import { Settings, Onboarding } from "./pages/Misc";
+import ChatAgents from "./pages/ChatAgents";
+import ChatAgentBuilder from "./pages/ChatAgentBuilder";
 import { Login, Signup, Forgot, MarketingShell, Home, Features, Pricing, About, Contact } from "./Public";
 import { AuthProvider, useAuth } from "./lib/auth";
 
@@ -101,7 +103,8 @@ export default function App() {
           <Route path="leads" element={<Leads />} />
           <Route path="leads/:id" element={<LeadDetail />} />
           <Route path="knowledge" element={<Knowledge />} />
-          <Route path="chat-agent" element={<ChatAgent />} />
+          <Route path="chat-agent" element={<ChatAgents />} />
+          <Route path="chat-agent/:id" element={<ChatAgentBuilder />} />
           <Route path="voice" element={<VoiceAgents />} />
           <Route path="voice/:id" element={<VoiceAgentBuilder />} />
           <Route path="widget" element={<Widget />} />

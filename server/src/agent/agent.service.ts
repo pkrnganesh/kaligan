@@ -39,6 +39,7 @@ export class AgentService {
         speakingSpeed: data.speakingSpeed ?? 'natural',
         channels: data.channels ?? { web: true, phone: false },
         captureFields: data.captureFields ?? ['name', 'email'],
+        connectedKbDocumentIds: data.connectedKbDocumentIds ?? [],
         status: 'draft',
       },
     });
