@@ -34,6 +34,7 @@ export const Orb: FC<OrbProps> = ({
   const microphoneRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const voiceLevelRef = useRef<number | undefined>(voiceLevel);
 
   const vert = /* glsl */ `
     precision highp float;
@@ -315,6 +316,11 @@ export const Orb: FC<OrbProps> = ({
     }
   };
 
+  // Keep voiceLevelRef in sync without triggering re-renders
+  useEffect(() => {
+    voiceLevelRef.current = voiceLevel;
+  }, [voiceLevel]);
+
   useEffect(() => {
     const container = ctnDom.current;
     if (!container) return;
@@ -427,9 +433,9 @@ export const Orb: FC<OrbProps> = ({
         program.uniforms.hue.value = hue;
 
         let activeLevel = 0;
-        if (voiceLevel !== undefined) {
+        if (voiceLevelRef.current !== undefined) {
           // Driven by external prop (e.g. from useLiveSession)
-          activeLevel = Math.min(voiceLevel * voiceSensitivity, 1);
+          activeLevel = Math.min(voiceLevelRef.current * voiceSensitivity, 1);
         } else if (runInternalMic && isMicrophoneInitialized) {
           calculatedVoiceLevel = analyzeAudio();
           activeLevel = calculatedVoiceLevel;
@@ -440,7 +446,7 @@ export const Orb: FC<OrbProps> = ({
         }
 
         const voiceRotationSpeed = baseRotationSpeed + (activeLevel * maxRotationSpeed * 2.0);
-        if (activeLevel > 0.05 || voiceLevel !== undefined) {
+        if (activeLevel > 0.05 || voiceLevelRef.current !== undefined) {
           currentRot += dt * voiceRotationSpeed;
         } else {
           // Slow passive rotation when idle
@@ -482,7 +488,6 @@ export const Orb: FC<OrbProps> = ({
   }, [
     hue,
     enableVoiceControl,
-    voiceLevel,
     voiceSensitivity,
     maxRotationSpeed,
     maxHoverIntensity,

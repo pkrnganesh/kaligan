@@ -404,7 +404,10 @@ export function useLiveSession() {
                   let responseText = 'No specific information was found in the guidelines.';
                   try {
                     const kbUrl = isPublic ? '/kb/public/query' : '/kb/query';
-                    const kbBody = isPublic ? { q: query, workspacePublicKey } : { q: query };
+                    const currentAgentId = activeAgentIdRef.current;
+                    const kbBody = isPublic
+                      ? { q: query, workspacePublicKey, agentId: currentAgentId }
+                      : { q: query, agentId: currentAgentId };
                     
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 5000);

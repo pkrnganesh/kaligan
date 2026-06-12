@@ -118,6 +118,7 @@ export default function VoiceAgentBuilder() {
         language: agent.language,
         speakingSpeed: agent.speakingSpeed,
         channels: agent.channels,
+        connectedKbDocumentIds: agent.connectedKbDocumentIds,
         status: publish ? 'live' : agent.status,
       });
       setAgent(updated);
@@ -143,6 +144,22 @@ export default function VoiceAgentBuilder() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const toggleDocConnection = (docId: string) => {
+    if (!agent) return;
+    const currentIds = Array.isArray(agent.connectedKbDocumentIds)
+      ? [...agent.connectedKbDocumentIds]
+      : typeof agent.connectedKbDocumentIds === 'string'
+        ? JSON.parse(agent.connectedKbDocumentIds)
+        : [];
+    const index = currentIds.indexOf(docId);
+    if (index > -1) {
+      currentIds.splice(index, 1);
+    } else {
+      currentIds.push(docId);
+    }
+    updateField('connectedKbDocumentIds', currentIds);
   };
 
   const toggleWebChannel = () => {
@@ -178,6 +195,12 @@ export default function VoiceAgentBuilder() {
   }
 
   const channelsObj = typeof agent?.channels === 'string' ? JSON.parse(agent.channels) : agent?.channels || { web: true, phone: false };
+
+  const activeConnectedKbDocIds = Array.isArray(agent.connectedKbDocumentIds)
+    ? agent.connectedKbDocumentIds
+    : typeof agent.connectedKbDocumentIds === 'string'
+      ? JSON.parse(agent.connectedKbDocumentIds)
+      : [];
 
   return (
     <>
@@ -252,21 +275,32 @@ export default function VoiceAgentBuilder() {
             </div>
           </Section>
 
-          <Section icon={<I.Book width={16} height={16} />} title="Connected knowledge" hint="Your voice agent speaks only from these sources — the same brain as your chat AI.">
-            <div className="flex items-center gap-2.5 bg-mint-100 rounded-xl px-3.5 py-3 text-[13px] text-emerald-700 font-medium mb-3.5">
-              <I.Check width={15} height={15} /> Synced with your Knowledge Base
-            </div>
-            <div className="flex flex-wrap gap-2.5">
-              {documents.filter(d => d.status === 'ready' || d.status === 'processing').map((d) => (
-                <span key={d.id} className="inline-flex items-center gap-2 bg-surface border border-line rounded-full px-3 py-1.5 text-[13px] font-medium">
-                  <span className={`w-[7px] h-[7px] rounded-full ${d.status === 'ready' ? 'bg-success' : 'bg-warning animate-pulse'}`} /> 
-                  {d.type === 'PDF' ? '📄' : d.type === 'FAQ' ? '❓' : '🔗'} {d.name}
-                </span>
-              ))}
+          <Section icon={<I.Book width={16} height={16} />} title="Connected knowledge" hint="Choose which knowledge documents this voice agent has access to. Only selected sources will be used during calls.">
+            <div className="space-y-2.5">
+              {documents.filter(d => d.status === 'ready' || d.status === 'processing').map((d) => {
+                const isChecked = activeConnectedKbDocIds.includes(d.id);
+                return (
+                  <label key={d.id} className="flex items-center justify-between border border-line hover:border-mint-300 rounded-xl p-3.5 hover:bg-surface-2 transition cursor-pointer">
+                    <span className="flex items-center gap-2.5 text-sm font-semibold">
+                      <span className={`w-2 h-2 rounded-full ${d.status === 'ready' ? 'bg-success' : 'bg-warning animate-pulse'}`} />
+                      {d.type === 'PDF' ? '📄' : d.type === 'FAQ' ? '❓' : '🔗'} {d.name}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggleDocConnection(d.id)}
+                      className="w-4.5 h-4.5 accent-emerald-600"
+                    />
+                  </label>
+                );
+              })}
               {documents.length === 0 && (
-                <span className="text-ink-muted text-[13px] py-1">No synced sources found. Add documents in the Knowledge page.</span>
+                <div className="text-ink-muted text-[13.5px] py-2">No documents found. Visit the Knowledge page to upload documents.</div>
               )}
-              <Link to="/app/knowledge" className="inline-flex items-center gap-2 border border-dashed border-line text-emerald-600 font-semibold rounded-full px-3 py-1.5 text-[13px] hover:border-mint-300">
+            </div>
+            <div className="mt-4 pt-3.5 border-t border-line flex justify-between items-center">
+              <span className="text-xs text-ink-muted">{activeConnectedKbDocIds.length} of {documents.length} sources selected</span>
+              <Link to="/app/knowledge" className="text-emerald-700 text-xs font-bold hover:underline">
                 + Manage sources
               </Link>
             </div>

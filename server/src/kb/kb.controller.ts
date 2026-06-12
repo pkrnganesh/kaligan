@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { KbService } from './kb.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { WorkspaceGuard } from '../common/guards/workspace.guard';
 import { PublicKeyGuard } from '../common/guards/public-key.guard';
 import { Public } from '../common/decorators/public.decorator';
@@ -28,6 +29,7 @@ import { map, filter } from 'rxjs/operators';
 export class KbController {
   constructor(
     private kbService: KbService,
+    private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
@@ -115,10 +117,11 @@ export class KbController {
   @UseGuards(WorkspaceGuard)
   async queryKb(
     @CurrentWorkspace() workspaceId: string,
-    @Body() body: { q: string; topK?: number },
+    @Body() body: { q: string; topK?: number; agentId?: string; documentIds?: string[] },
   ) {
     if (!body.q) throw new BadRequestException('Query parameter q is required.');
-    return this.kbService.queryKb(workspaceId, body.q, body.topK);
+    const docIds = await this.resolveDocumentIds(workspaceId, body.agentId, body.documentIds);
+    return this.kbService.queryKb(workspaceId, body.q, body.topK, undefined, docIds);
   }
 
   @Post('public/query')
@@ -126,10 +129,11 @@ export class KbController {
   @UseGuards(PublicKeyGuard)
   async publicQueryKb(
     @CurrentWorkspace() workspaceId: string,
-    @Body() body: { q: string; topK?: number },
+    @Body() body: { q: string; topK?: number; agentId?: string; documentIds?: string[] },
   ) {
     if (!body.q) throw new BadRequestException('Query parameter q is required.');
-    return this.kbService.queryKb(workspaceId, body.q, body.topK);
+    const docIds = await this.resolveDocumentIds(workspaceId, body.agentId, body.documentIds);
+    return this.kbService.queryKb(workspaceId, body.q, body.topK, undefined, docIds);
   }
 
   @Sse('events')
@@ -155,5 +159,31 @@ export class KbController {
         },
       } as MessageEvent)),
     );
+  }
+
+  /**
+   * Resolve document IDs for KB query filtering.
+   * Priority: explicit documentIds > agent's connectedKbDocumentIds > undefined (all docs).
+   */
+  private async resolveDocumentIds(
+    workspaceId: string,
+    agentId?: string,
+    documentIds?: string[],
+  ): Promise<string[] | undefined> {
+    // Explicit documentIds take priority
+    if (documentIds && documentIds.length > 0) {
+      return documentIds;
+    }
+    // If agentId is provided, look up the agent's connectedKbDocumentIds
+    if (agentId) {
+      const agent = await this.prisma.agent.findFirst({
+        where: { id: agentId, workspaceId },
+        select: { connectedKbDocumentIds: true },
+      });
+      if (agent && Array.isArray(agent.connectedKbDocumentIds) && (agent.connectedKbDocumentIds as string[]).length > 0) {
+        return agent.connectedKbDocumentIds as string[];
+      }
+    }
+    return undefined;
   }
 }
