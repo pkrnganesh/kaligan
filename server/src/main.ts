@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -50,6 +51,7 @@ async function bootstrap() {
   };
 
   app.enableCors(corsOptionsDelegate);
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   const port = process.env.PORT ?? 3005;
   await app.listen(port);

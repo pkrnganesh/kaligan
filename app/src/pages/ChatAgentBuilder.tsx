@@ -91,15 +91,28 @@ export default function ChatAgentBuilder() {
     setSaveSuccess(false);
     setError(null);
     try {
-      const updated = await api.patch(`/agents/${agent.id}`, {
-        name: agent.name,
-        persona: agent.persona,
-        greeting: agent.greeting,
-        goal: agent.goal,
-        connectedKbDocumentIds: agent.connectedKbDocumentIds,
-        captureFields: agent.captureFields,
-        status: publish ? 'live' : agent.status,
-      });
+      let updated;
+      if (publish) {
+        // Save the fields as draft first, then publish it
+        await api.patch(`/agents/${agent.id}`, {
+          name: agent.name,
+          persona: agent.persona,
+          greeting: agent.greeting,
+          goal: agent.goal,
+          connectedKbDocumentIds: agent.connectedKbDocumentIds,
+          captureFields: agent.captureFields,
+        });
+        updated = await api.post(`/agents/${agent.id}/publish`);
+      } else {
+        updated = await api.patch(`/agents/${agent.id}`, {
+          name: agent.name,
+          persona: agent.persona,
+          greeting: agent.greeting,
+          goal: agent.goal,
+          connectedKbDocumentIds: agent.connectedKbDocumentIds,
+          captureFields: agent.captureFields,
+        });
+      }
       setAgent(updated);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -109,14 +122,19 @@ export default function ChatAgentBuilder() {
       setSaving(false);
     }
   };
-
+ 
   const toggleStatus = async () => {
     if (!agent) return;
     const newStatus = agent.status === 'live' ? 'draft' : 'live';
     updateField('status', newStatus);
     setSaving(true);
     try {
-      const updated = await api.patch(`/agents/${agent.id}`, { status: newStatus });
+      let updated;
+      if (newStatus === 'live') {
+        updated = await api.post(`/agents/${agent.id}/publish`);
+      } else {
+        updated = await api.patch(`/agents/${agent.id}`, { status: newStatus });
+      }
       setAgent(updated);
     } catch (err: any) {
       setError(err.message || "Failed to update agent status");

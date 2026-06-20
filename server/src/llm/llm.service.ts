@@ -178,25 +178,67 @@ ${transcript}
       return `I don't have that information in my knowledge base. Could you please provide your email or phone number so our team can follow up with you?`;
     }
 
-    // Try to find a sentence containing keywords from the message
-    const sentences = cleanContext.split(/(?<=[.!?])\s+/);
-    const words = message.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-    
-    let matchedSentence = '';
-    for (const sentence of sentences) {
-      const lowerSentence = sentence.toLowerCase();
-      if (words.some(word => lowerSentence.includes(word))) {
-        matchedSentence = sentence;
-        break;
+    // Split context into paragraphs/blocks
+    const blocks = cleanContext
+      .split(/\n\n+/)
+      .map(b => b.trim())
+      .filter(b => b.length > 0);
+
+    const stopWords = new Set([
+      'what', 'who', 'where', 'when', 'why', 'how', 'is', 'are', 'was', 'were', 'the', 'a', 'an', 'of', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'about', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'from', 'up', 'down', 'in', 'out', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don', 'should', 'now',
+      'kaligan', 'ai', 'company', 'information', 'document', 'overview'
+    ]);
+
+    // Tokenize query message into words
+    const queryWords = message
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopWords.has(w));
+
+    // Common prefix helper for simple stemming
+    const commonPrefixLen = (a: string, b: string): number => {
+      let len = 0;
+      while (len < a.length && len < b.length && a[len] === b[len]) {
+        len++;
+      }
+      return len;
+    };
+
+    let bestBlock = '';
+    let maxScore = 0;
+
+    for (const block of blocks) {
+      const lowerBlock = block.toLowerCase().replace(/[^\w\s]/g, '');
+      const blockWords = lowerBlock.split(/\s+/);
+      
+      let score = 0;
+      for (const qWord of queryWords) {
+        for (const bWord of blockWords) {
+          if (bWord === qWord) {
+            score += 10; // Exact match
+          } else {
+            // Check prefix overlap (stemming)
+            const prefixLen = commonPrefixLen(bWord, qWord);
+            if (prefixLen >= 4) {
+              score += 5;
+            }
+          }
+        }
+      }
+
+      if (score > maxScore) {
+        maxScore = score;
+        bestBlock = block;
       }
     }
 
-    if (matchedSentence) {
-      return `${matchedSentence} Let me know if you need more details!`;
+    if (maxScore > 0 && bestBlock) {
+      return `${bestBlock}\n\nLet me know if you need more details!`;
     }
 
-    // Return first sentence of context
-    return `${sentences[0]} Let me know if that helps!`;
+    // Fallback: If no query words matched, return the first block
+    return `${blocks[0]}\n\nLet me know if that helps!`;
   }
 
   /**

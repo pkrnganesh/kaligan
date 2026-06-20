@@ -6,6 +6,7 @@ import { KbService } from '../kb/kb.service';
 import { RagService } from '../rag/rag.service';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '../prisma/prisma.module';
+import { BillingModule } from '../billing/billing.module';
 import { randomUUID } from 'crypto';
 
 // Mock fastembed
@@ -108,6 +109,7 @@ describe('ConversationService Integration & Lead Capture', () => {
           envFilePath: '.env',
         }),
         PrismaModule,
+        BillingModule,
       ],
       providers: [ConversationService, LlmService, KbService, RagService],
     }).compile();

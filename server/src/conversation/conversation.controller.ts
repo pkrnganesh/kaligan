@@ -14,6 +14,9 @@ import { PublicKeyGuard } from '../common/guards/public-key.guard';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentWorkspace } from '../common/decorators/current-workspace.decorator';
 
+import { CheckPlanLimit } from '../common/decorators/check-plan-limit.decorator';
+import { PlanGateGuard } from '../common/guards/plan-gate.guard';
+
 @Controller()
 export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
@@ -38,7 +41,8 @@ export class ConversationController {
 
   @Post('public/chat')
   @Public()
-  @UseGuards(PublicKeyGuard)
+  @UseGuards(PublicKeyGuard, PlanGateGuard)
+  @CheckPlanLimit('chatMessages')
   async publicChatTurn(
     @CurrentWorkspace() workspaceId: string,
     @Body() body: {

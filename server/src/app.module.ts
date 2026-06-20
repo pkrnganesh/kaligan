@@ -17,6 +17,9 @@ import { LeadModule } from './lead/lead.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { VoiceModule } from './voice/voice.module';
 import { WidgetModule } from './widget/widget.module';
+import { BillingModule } from './billing/billing.module';
+import { TelephonyModule } from './telephony/telephony.module';
+import { PublicDemoModule } from './public-demo/public-demo.module';
 
 @Module({
   imports: [
@@ -36,6 +39,9 @@ import { WidgetModule } from './widget/widget.module';
     DashboardModule,
     VoiceModule,
     WidgetModule,
+    BillingModule,
+    TelephonyModule,
+    PublicDemoModule,
   ],
   controllers: [AppController],
   providers: [

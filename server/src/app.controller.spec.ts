@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './app.module';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 jest.mock('fastembed', () => {
   return {
@@ -39,6 +40,7 @@ describe('AppController (e2e)', () => {
         transform: true,
       }),
     );
+    app.useWebSocketAdapter(new WsAdapter(app));
 
     await app.init();
   });

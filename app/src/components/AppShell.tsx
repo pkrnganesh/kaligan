@@ -44,6 +44,7 @@ export default function AppShell() {
         <Label>Inbox</Label>
         <Item to="/app" icon={<I.Dashboard />} label="Dashboard" />
         <Item to="/app/conversations" icon={<I.Chat />} label="Conversations" count={5} />
+        <Item to="/app/calls" icon={<I.Phone />} label="Call Logs" />
         <Item to="/app/leads" icon={<I.Users />} label="Leads" count={9} />
 
         <Label>AI Setup</Label>

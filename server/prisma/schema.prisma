@@ -16,6 +16,8 @@ model Workspace {
   publicKey  String   @unique @map("public_key")
   plan       String   @default("starter")
   lastWidgetPingAt DateTime? @map("last_widget_ping_at") @db.Timestamptz
+  isDemo           Boolean   @default(false) @map("is_demo")
+  expiresAt        DateTime? @map("expires_at") @db.Timestamptz
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -26,6 +28,12 @@ model Workspace {
   conversations Conversation[]
   messages      Message[]
   leads         Lead[]
+  agentVersions AgentVersion[]
+
+  subscription  Subscription?
+  usageEvents   UsageEvent[]
+  phoneNumbers  PhoneNumber[]
+  calls         Call[]
 
   @@map("workspaces")
 }
@@ -41,6 +49,7 @@ model User {
 
   workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   refreshTokens RefreshToken[]
+  agentVersions AgentVersion[]
 
   @@map("users")
 }
@@ -114,6 +123,8 @@ model Agent {
 
   workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   conversations Conversation[]
+  versions      AgentVersion[]
+  phoneNumbers  PhoneNumber[]
 
   @@map("agents")
 }
@@ -130,6 +141,8 @@ model Conversation {
   messageCount Int       @default(0) @map("message_count")
   startedAt    DateTime  @default(now()) @map("started_at") @db.Timestamptz
   endedAt      DateTime? @map("ended_at") @db.Timestamptz
+  callSid      String?   @map("call_sid")
+  durationSec  Int?      @map("duration_sec")
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   agent     Agent?    @relation(fields: [agentId], references: [id], onDelete: SetNull)
@@ -172,4 +185,87 @@ model Lead {
   conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
 
   @@map("leads")
+}
+
+model AgentVersion {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agentId        String   @map("agent_id") @db.Uuid
+  workspaceId    String   @map("workspace_id") @db.Uuid
+  configSnapshot Json     @map("config_snapshot")
+  publishedAt    DateTime @default(now()) @map("published_at") @db.Timestamptz
+  publishedBy    String?  @map("published_by") @db.Uuid
+
+  agent          Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user           User?     @relation(fields: [publishedBy], references: [id], onDelete: SetNull)
+
+  @@map("agent_versions")
+}
+
+model Subscription {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId        String    @unique @map("workspace_id") @db.Uuid
+  stripeCustomerId   String    @map("stripe_customer_id")
+  stripeSubId        String?   @map("stripe_sub_id")
+  plan               String    @default("starter")
+  status             String    @default("active")
+  currentPeriodEnd   DateTime? @map("current_period_end") @db.Timestamptz
+  cancelAtPeriodEnd  Boolean   @default(false) @map("cancel_at_period_end")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model UsageEvent {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId String   @map("workspace_id") @db.Uuid
+  type        String   // 'chat_message', 'voice_minute_web', 'voice_minute_phone', 'lead', 'kb_doc'
+  quantity    Int      @default(1)
+  agentId     String?  @map("agent_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("usage_events")
+}
+
+model PhoneNumber {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId      String    @map("workspace_id") @db.Uuid
+  agentId          String    @map("agent_id") @db.Uuid
+  provider         String    @default("twilio")
+  e164             String
+  agentToken       String    @unique @map("agent_token")
+  status           String    @default("pending")
+  authTokenEnc     String?   @map("auth_token_enc")
+  recordingEnabled Boolean   @default(false) @map("recording_enabled")
+  connectedAt      DateTime? @map("connected_at") @db.Timestamptz
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  agent     Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@map("phone_numbers")
+}
+
+model Call {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId    String   @map("workspace_id") @db.Uuid
+  agentId        String   @map("agent_id") @db.Uuid
+  callSid        String   @unique @map("call_sid")
+  fromNumber     String   @map("from_number")
+  durationSec    Int      @map("duration_sec")
+  recordingUrl   String?  @map("recording_url")
+  latencyMs      Int?     @map("latency_ms")
+  interruptions  Int      @default(0)
+  outcome        String?
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("calls")
 }

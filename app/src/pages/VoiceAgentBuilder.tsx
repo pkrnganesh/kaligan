@@ -4,6 +4,7 @@ import * as I from "../components/icons";
 import { api } from "../lib/api";
 import { Orb } from "../components/voice/Orb";
 import { useLiveSession, ConnectionState } from "../lib/voice/useLiveSession";
+import { useAuth } from "../lib/auth";
 
 const voices = [
   { id: "aria", name: "Aria", desc: "warm, friendly", g: "♀" },
@@ -38,12 +39,18 @@ function Switch({ on, onClick }: { on: boolean; onClick: () => void }) {
 
 export default function VoiceAgentBuilder() {
   const { id } = useParams<{ id: string }>();
+  const { workspace } = useAuth();
   const [agent, setAgent] = useState<any>(null);
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Phone connection states
+  const [phoneE164, setPhoneE164] = useState("");
+  const [connectingPhone, setConnectingPhone] = useState(false);
+  const [verifyingPhone, setVerifyingPhone] = useState(false);
 
   // Live session hook
   const {
@@ -109,18 +116,34 @@ export default function VoiceAgentBuilder() {
     setSaveSuccess(false);
     setError(null);
     try {
-      const updated = await api.patch(`/agents/${agent.id}`, {
-        name: agent.name,
-        persona: agent.persona,
-        greeting: agent.greeting,
-        goal: agent.goal,
-        voiceName: agent.voiceName,
-        language: agent.language,
-        speakingSpeed: agent.speakingSpeed,
-        channels: agent.channels,
-        connectedKbDocumentIds: agent.connectedKbDocumentIds,
-        status: publish ? 'live' : agent.status,
-      });
+      let updated;
+      if (publish) {
+        // Save the fields as draft first, then publish it
+        await api.patch(`/agents/${agent.id}`, {
+          name: agent.name,
+          persona: agent.persona,
+          greeting: agent.greeting,
+          goal: agent.goal,
+          voiceName: agent.voiceName,
+          language: agent.language,
+          speakingSpeed: agent.speakingSpeed,
+          channels: agent.channels,
+          connectedKbDocumentIds: agent.connectedKbDocumentIds,
+        });
+        updated = await api.post(`/agents/${agent.id}/publish`);
+      } else {
+        updated = await api.patch(`/agents/${agent.id}`, {
+          name: agent.name,
+          persona: agent.persona,
+          greeting: agent.greeting,
+          goal: agent.goal,
+          voiceName: agent.voiceName,
+          language: agent.language,
+          speakingSpeed: agent.speakingSpeed,
+          channels: agent.channels,
+          connectedKbDocumentIds: agent.connectedKbDocumentIds,
+        });
+      }
       setAgent(updated);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -131,13 +154,54 @@ export default function VoiceAgentBuilder() {
     }
   };
 
+  const handleConnectPhone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phoneE164.trim()) return;
+    setConnectingPhone(true);
+    setError(null);
+    try {
+      await api.post("/telephony/numbers/connect", {
+        agentId: id,
+        phoneE164: phoneE164.trim(),
+      });
+      setPhoneE164("");
+      await fetchAgent();
+    } catch (err: any) {
+      setError(err.message || "Failed to connect number");
+    } finally {
+      setConnectingPhone(false);
+    }
+  };
+
+  const handleVerifyPhone = async (agentToken: string) => {
+    setVerifyingPhone(true);
+    setError(null);
+    try {
+      const res = await api.post("/telephony/numbers/verify", { agentToken });
+      if (res.status === "connected") {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+      await fetchAgent();
+    } catch (err: any) {
+      setError(err.message || "Failed to verify. Make a test call first.");
+    } finally {
+      setVerifyingPhone(false);
+    }
+  };
+ 
   const toggleStatus = async () => {
     if (!agent) return;
     const newStatus = agent.status === 'live' ? 'draft' : 'live';
     updateField('status', newStatus);
     setSaving(true);
     try {
-      const updated = await api.patch(`/agents/${agent.id}`, { status: newStatus });
+      let updated;
+      if (newStatus === 'live') {
+        updated = await api.post(`/agents/${agent.id}/publish`);
+      } else {
+        updated = await api.patch(`/agents/${agent.id}`, { status: newStatus });
+      }
       setAgent(updated);
     } catch (err: any) {
       setError(err.message || "Failed to update agent status");
@@ -355,13 +419,106 @@ export default function VoiceAgentBuilder() {
               </span>
               <Switch on={channelsObj.web} onClick={toggleWebChannel} />
             </div>
-            <div className="flex items-center gap-3.5 py-3.5 border-t border-line">
-              <span className="w-[38px] h-[38px] rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center shrink-0"><I.Phone width={18} height={18} /></span>
-              <span className="flex-1">
-                <b className="text-sm font-semibold">Phone number</b>
-                <small className="block text-ink-muted text-[12.5px]">A real number callers can dial (Add-on)</small>
-              </span>
-              <span className="font-display font-semibold text-sm bg-surface-2 border border-line rounded-lg px-3 py-1.5">+1 (415) 555‑0142</span>
+
+            <div className="border-t border-line mt-3 pt-3.5">
+              <div className="flex items-center gap-3.5">
+                <span className="w-[38px] h-[38px] rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center shrink-0"><I.Phone width={18} height={18} /></span>
+                <span className="flex-1">
+                  <b className="text-sm font-semibold">Phone line integration (BYON)</b>
+                  <small className="block text-ink-muted text-[12.5px]">Let callers dial a real phone number to reach this agent.</small>
+                </span>
+              </div>
+
+              {workspace?.plan === "starter" ? (
+                <div className="p-4 bg-emerald-50/50 border border-mint-300 rounded-2xl mt-4 flex items-start gap-3 fadeup">
+                  <span className="text-emerald-700 mt-0.5">🔒</span>
+                  <div>
+                    <b className="text-sm font-semibold text-emerald-800 block">Phone setup requires Growth plan</b>
+                    <span className="text-[12.5px] text-ink-muted block mt-0.5 leading-relaxed">
+                      Bringing your own Twilio number to KaliGanAI is reserved for the Growth and Agency plans. Upgrade in your settings panel to enable inbound phone agents.
+                    </span>
+                    <Link to="/app/settings" className="text-emerald-700 text-xs font-bold hover:underline block mt-2">Go to Settings →</Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4 bg-surface-2 border border-line rounded-2xl p-4 space-y-4 fadeup">
+                  {agent.phoneNumbers && agent.phoneNumbers.length > 0 ? (
+                    (() => {
+                      const conn = agent.phoneNumbers[0];
+                      const webhookUrl = `${window.location.origin}/api/v1/telephony/twilio/incoming/${conn.agentToken}`;
+
+                      return (
+                        <div className="space-y-3.5 text-[13px]">
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-ink">Connected number:</span>
+                            <span className="font-display font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 border border-mint-300 rounded-full">{conn.e164}</span>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-ink">Status:</span>
+                            <span className={`font-bold px-2.5 py-0.5 rounded-full capitalize text-[11px] ${
+                              conn.status === "connected" ? "bg-emerald-100 text-emerald-800" : "bg-[#fbf3df] text-warm animate-pulse"
+                            }`}>
+                              {conn.status}
+                            </span>
+                          </div>
+
+                          <div className="border-t border-line/60 pt-3">
+                            <label className="field-label !mb-1 text-ink font-semibold">Twilio Webhook URL</label>
+                            <div className="flex gap-2">
+                              <input readOnly value={webhookUrl} className="input !bg-surface flex-1 text-[11.5px] font-mono select-all" />
+                              <button onClick={() => {
+                                navigator.clipboard.writeText(webhookUrl);
+                                setSaveSuccess(true);
+                                setTimeout(() => setSaveSuccess(false), 2000);
+                              }} className="btn btn-ghost px-2.5 text-xs">Copy</button>
+                            </div>
+                            <small className="block text-ink-muted text-[11.5px] mt-1.5 leading-relaxed">
+                              In your Twilio Console for this number, set the **Voice & Fax Configuration** webhook to this URL (HTTP POST).
+                            </small>
+                          </div>
+
+                          {conn.status === "pending" && (
+                            <div className="border-t border-line/60 pt-3 flex items-center justify-between">
+                              <span className="text-[12px] text-ink-muted leading-tight">Once you set the webhook, place a test call, then verify connection.</span>
+                              <button 
+                                onClick={() => handleVerifyPhone(conn.agentToken)} 
+                                disabled={verifyingPhone}
+                                className="btn btn-primary text-xs"
+                              >
+                                {verifyingPhone ? "Verifying..." : "Verify Connection"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <form onSubmit={handleConnectPhone} className="space-y-3">
+                      <div>
+                        <label className="field-label">Phone number (E.164 format)</label>
+                        <input 
+                          required 
+                          placeholder="+14155550199" 
+                          value={phoneE164}
+                          onChange={(e) => setPhoneE164(e.target.value)}
+                          className="input" 
+                        />
+                        <small className="block text-ink-muted text-[11.5px] mt-1 leading-snug">
+                          Enter your Twilio phone number including the country code (e.g. +1...).
+                        </small>
+                      </div>
+                      <button 
+                        type="submit" 
+                        disabled={connectingPhone}
+                        className="btn btn-primary w-full flex items-center justify-center gap-1.5"
+                      >
+                        {connectingPhone ? "Connecting..." : "Initiate Connection"}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              )}
             </div>
           </Section>
         </div>

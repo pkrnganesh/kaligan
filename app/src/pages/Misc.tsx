@@ -323,6 +323,74 @@ export function Settings() {
     }
   }, [user, workspace]);
 
+  // Billing and Usage states
+  const [usageData, setUsageData] = useState<any>(null);
+  const [loadingUsage, setLoadingUsage] = useState(false);
+
+  const fetchUsage = useCallback(async () => {
+    setLoadingUsage(true);
+    try {
+      const data = await api.get("/billing/usage");
+      setUsageData(data);
+    } catch (err) {
+      console.error("Failed to load usage details", err);
+    } finally {
+      setLoadingUsage(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab === "Billing & Plan") {
+      fetchUsage();
+    }
+  }, [tab, fetchUsage]);
+
+  const handleUpgrade = async (plan: string) => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const res = await api.post("/billing/checkout", {
+        plan,
+        successUrl: window.location.href,
+        cancelUrl: window.location.href,
+      });
+      if (res.isMock) {
+        // Trigger mock checkout update directly to make it instantaneous and simple!
+        const mockRes = await api.post("/billing/mock-checkout", { plan });
+        if (mockRes.success) {
+          setMessage({ text: `Successfully updated to ${plan} plan!`, success: true });
+          await refreshSession();
+          await fetchUsage();
+        }
+      } else {
+        window.location.href = res.url;
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message || "Checkout failed", success: false });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManageBilling = async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const res = await api.post("/billing/portal", {
+        returnUrl: window.location.href,
+      });
+      if (res.isMock) {
+        alert("Billing Portal is in Mock mode because Stripe is not configured.");
+      } else {
+        window.location.href = res.url;
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message || "Failed to load billing portal", success: false });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSaveWorkspace = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -460,21 +528,190 @@ export function Settings() {
         )}
 
         {tab === "Billing & Plan" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-ink-muted text-[12.5px]">Current plan</div>
-                <div className="font-display text-xl font-bold capitalize">
-                  {workspace?.plan || "Starter"}
-                </div>
+          <div className="space-y-6">
+            {loadingUsage && !usageData ? (
+              <div className="animate-pulse space-y-4">
+                <div className="h-20 bg-surface-2 rounded-xl"></div>
+                <div className="h-32 bg-surface-2 rounded-xl"></div>
               </div>
-              <button className="btn btn-primary" onClick={() => alert("Billing & Staging upgrades coming soon!")}>
-                Upgrade
-              </button>
-            </div>
-            <div className="mt-5 bg-surface-2 border border-line rounded-xl p-4 text-[13.5px]">
-              Plan status: <b>Active</b> · Includes local model grounding & lead capture pipelines.
-            </div>
+            ) : (
+              <>
+                {/* Plan Header */}
+                <div className="flex items-center justify-between border-b border-line pb-5">
+                  <div>
+                    <div className="text-ink-muted text-[12.5px] font-semibold uppercase tracking-wider">Current Plan</div>
+                    <div className="font-display text-2xl font-bold capitalize flex items-center gap-2 mt-0.5">
+                      {usageData?.plan || workspace?.plan || "Starter"}
+                      <span className="text-[11px] bg-emerald-50 text-emerald-800 border border-mint-200 px-2 py-0.5 rounded-full font-semibold">
+                        Active
+                      </span>
+                    </div>
+                    {usageData?.cycleStart && (
+                      <div className="text-xs text-ink-muted mt-1">
+                        Cycle started: <b>{new Date(usageData.cycleStart).toLocaleDateString()}</b> (resets monthly)
+                      </div>
+                    )}
+                  </div>
+                  {(usageData?.plan && usageData.plan !== "starter") && (
+                    <button
+                      className="btn border border-line hover:border-mint-300 font-semibold text-xs py-2"
+                      onClick={handleManageBilling}
+                      disabled={loading}
+                    >
+                      Manage billing portal
+                    </button>
+                  )}
+                </div>
+
+                {/* Usage Statistics */}
+                {usageData && (
+                  <div className="space-y-4">
+                    <h3 className="font-display font-bold text-sm tracking-wide text-ink-muted uppercase">Monthly Usage</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Chat Messages Bar */}
+                      <div className="bg-surface-2 border border-line p-4 rounded-xl">
+                        <div className="flex justify-between items-center text-xs font-semibold">
+                          <span>Chat Messages</span>
+                          <span className="text-ink-muted">
+                            {usageData.usage.chatMessages} / {usageData.limits.chatMessages === null || usageData.limits.chatMessages === Infinity ? "Unlimited" : usageData.limits.chatMessages}
+                          </span>
+                        </div>
+                        {usageData.limits.chatMessages !== Infinity && (
+                          <div className="w-full bg-line rounded-full h-2 mt-2.5 overflow-hidden">
+                            <div
+                              className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+                              style={{ width: `${Math.min(100, Math.round((usageData.usage.chatMessages / usageData.limits.chatMessages) * 100))}%` }}
+                            ></div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Voice Minutes Bar */}
+                      <div className="bg-surface-2 border border-line p-4 rounded-xl">
+                        <div className="flex justify-between items-center text-xs font-semibold">
+                          <span>Voice Minutes</span>
+                          <span className="text-ink-muted">
+                            {usageData.usage.voiceMinutes} / {usageData.limits.voiceMinutes === null || usageData.limits.voiceMinutes === Infinity ? "Unlimited" : usageData.limits.voiceMinutes} mins
+                          </span>
+                        </div>
+                        {usageData.limits.voiceMinutes !== Infinity && (
+                          <div className="w-full bg-line rounded-full h-2 mt-2.5 overflow-hidden">
+                            <div
+                              className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+                              style={{ width: `${Math.min(100, Math.round((usageData.usage.voiceMinutes / usageData.limits.voiceMinutes) * 100))}%` }}
+                            ></div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Created Agents Bar */}
+                      <div className="bg-surface-2 border border-line p-4 rounded-xl">
+                        <div className="flex justify-between items-center text-xs font-semibold">
+                          <span>Active AI Employees</span>
+                          <span className="text-ink-muted">
+                            {usageData.usage.agents} / {usageData.limits.agents === null || usageData.limits.agents === Infinity ? "Unlimited" : usageData.limits.agents}
+                          </span>
+                        </div>
+                        {usageData.limits.agents !== Infinity && (
+                          <div className="w-full bg-line rounded-full h-2 mt-2.5 overflow-hidden">
+                            <div
+                              className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+                              style={{ width: `${Math.min(100, Math.round((usageData.usage.agents / usageData.limits.agents) * 100))}%` }}
+                            ></div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Plan Comparison Tiers */}
+                <div className="space-y-4 pt-2">
+                  <h3 className="font-display font-bold text-sm tracking-wide text-ink-muted uppercase">Change Plan</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Starter Card */}
+                    <div className={`border rounded-2xl p-5 flex flex-col justify-between transition ${
+                      (usageData?.plan || workspace?.plan || "starter") === "starter" ? "border-emerald-600 bg-emerald-50/30" : "border-line hover:border-mint-300"
+                    }`}>
+                      <div>
+                        <h4 className="font-display font-bold text-base">Starter</h4>
+                        <div className="text-[12px] text-ink-muted mt-0.5">For small businesses trying out AI</div>
+                        <div className="mt-4 flex items-baseline">
+                          <span className="text-2xl font-bold font-display">$49</span>
+                          <span className="text-ink-muted text-xs ml-1">/month</span>
+                        </div>
+                        <ul className="mt-4 space-y-2 text-xs text-ink-muted">
+                          <li className="flex items-center gap-1.5">✓ 1 chat + 1 voice employee</li>
+                          <li className="flex items-center gap-1.5">✓ 500 conversations /mo</li>
+                          <li className="flex items-center gap-1.5">✓ 100 voice minutes</li>
+                          <li className="flex items-center gap-1.5 text-line-through text-opacity-55">✗ BYON telephony connection</li>
+                        </ul>
+                      </div>
+                      <button
+                        className="btn w-full mt-6 py-2 text-xs font-bold"
+                        onClick={() => handleUpgrade("starter")}
+                        disabled={loading || (usageData?.plan || workspace?.plan || "starter") === "starter"}
+                      >
+                        {(usageData?.plan || workspace?.plan || "starter") === "starter" ? "Current Plan" : "Downgrade to Starter"}
+                      </button>
+                    </div>
+
+                    {/* Growth Card */}
+                    <div className={`border rounded-2xl p-5 flex flex-col justify-between transition ${
+                      (usageData?.plan || workspace?.plan) === "growth" ? "border-emerald-600 bg-emerald-50/30" : "border-line hover:border-mint-300"
+                    }`}>
+                      <div>
+                        <h4 className="font-display font-bold text-base">Growth</h4>
+                        <div className="text-[12px] text-ink-muted mt-0.5">Perfect for scaling agencies & consultancies</div>
+                        <div className="mt-4 flex items-baseline">
+                          <span className="text-2xl font-bold font-display">$149</span>
+                          <span className="text-ink-muted text-xs ml-1">/month</span>
+                        </div>
+                        <ul className="mt-4 space-y-2 text-xs text-ink-muted">
+                          <li className="flex items-center gap-1.5">✓ 3 chat + 3 voice employees</li>
+                          <li className="flex items-center gap-1.5">✓ 5,000 conversations /mo</li>
+                          <li className="flex items-center gap-1.5">✓ 1,000 voice minutes /mo</li>
+                          <li className="flex items-center gap-1.5">✓ Bring-Your-Own-Number (BYON)</li>
+                        </ul>
+                      </div>
+                      <button
+                        className="btn btn-primary w-full mt-6 py-2 text-xs font-bold"
+                        onClick={() => handleUpgrade("growth")}
+                        disabled={loading || (usageData?.plan || workspace?.plan) === "growth"}
+                      >
+                        {(usageData?.plan || workspace?.plan) === "growth" ? "Current Plan" : "Upgrade to Growth"}
+                      </button>
+                    </div>
+
+                    {/* Enterprise Card */}
+                    <div className={`border rounded-2xl p-5 flex flex-col justify-between transition ${
+                      (usageData?.plan || workspace?.plan) === "enterprise" ? "border-emerald-600 bg-emerald-50/30" : "border-line hover:border-mint-300"
+                    }`}>
+                      <div>
+                        <h4 className="font-display font-bold text-base">Enterprise</h4>
+                        <div className="text-[12px] text-ink-muted mt-0.5">High-volume white-labeled custom scale</div>
+                        <div className="mt-4 flex items-baseline">
+                          <span className="text-2xl font-bold font-display">Custom</span>
+                        </div>
+                        <ul className="mt-4 space-y-2 text-xs text-ink-muted">
+                          <li className="flex items-center gap-1.5">✓ Unlimited employees</li>
+                          <li className="flex items-center gap-1.5">✓ Unlimited metrics & usage</li>
+                          <li className="flex items-center gap-1.5">✓ Dedicated computing instance</li>
+                          <li className="flex items-center gap-1.5">✓ White-labeling & SLAs</li>
+                        </ul>
+                      </div>
+                      <button
+                        className="btn border border-line hover:border-mint-300 w-full mt-6 py-2 text-xs font-bold"
+                        onClick={() => handleUpgrade("enterprise")}
+                        disabled={loading || (usageData?.plan || workspace?.plan) === "enterprise"}
+                      >
+                        {(usageData?.plan || workspace?.plan) === "enterprise" ? "Current Plan" : "Upgrade to Enterprise"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
 

@@ -12,6 +12,7 @@ import {
 import { AgentService } from './agent.service';
 import { WorkspaceGuard } from '../common/guards/workspace.guard';
 import { CurrentWorkspace } from '../common/decorators/current-workspace.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('agents')
 @UseGuards(WorkspaceGuard)
@@ -55,8 +56,27 @@ export class AgentController {
   async publishAgent(
     @CurrentWorkspace() workspaceId: string,
     @Param('id') id: string,
+    @CurrentUser() user?: any,
   ) {
-    return this.agentService.publish(workspaceId, id);
+    const userId = user?.userId;
+    return this.agentService.publish(workspaceId, id, userId);
+  }
+
+  @Get(':id/versions')
+  async getAgentVersions(
+    @CurrentWorkspace() workspaceId: string,
+    @Param('id') id: string,
+  ) {
+    return this.agentService.getVersions(workspaceId, id);
+  }
+
+  @Post(':id/rollback')
+  async rollbackAgent(
+    @CurrentWorkspace() workspaceId: string,
+    @Param('id') id: string,
+    @Body() body: { versionId: string },
+  ) {
+    return this.agentService.rollback(workspaceId, id, body.versionId);
   }
 
   @Delete(':id')

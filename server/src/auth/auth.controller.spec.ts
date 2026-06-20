@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../app.module';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 
@@ -53,6 +54,7 @@ describe('AuthController (e2e)', () => {
     );
     
     prisma = moduleFixture.get<PrismaService>(PrismaService);
+    app.useWebSocketAdapter(new WsAdapter(app));
     await app.init();
   });
 

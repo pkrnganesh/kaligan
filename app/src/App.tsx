@@ -11,6 +11,7 @@ import Widget from "./pages/Widget";
 import { Settings, Onboarding } from "./pages/Misc";
 import ChatAgents from "./pages/ChatAgents";
 import ChatAgentBuilder from "./pages/ChatAgentBuilder";
+import Calls from "./pages/Calls";
 import { Login, Signup, Forgot, MarketingShell, Home, Features, Pricing, About, Contact } from "./Public";
 import { AuthProvider, useAuth } from "./lib/auth";
 
@@ -107,6 +108,7 @@ export default function App() {
           <Route path="chat-agent/:id" element={<ChatAgentBuilder />} />
           <Route path="voice" element={<VoiceAgents />} />
           <Route path="voice/:id" element={<VoiceAgentBuilder />} />
+          <Route path="calls" element={<Calls />} />
           <Route path="widget" element={<Widget />} />
           <Route path="settings" element={<Settings />} />
         </Route>

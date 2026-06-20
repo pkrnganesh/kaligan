@@ -230,6 +230,284 @@ export function MarketingShell() {
   );
 }
 
+function InteractiveDemo() {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<"A" | "B">("A");
+  const [vertical, setVertical] = useState("saas");
+  const [url, setUrl] = useState("");
+  const [ingesting, setIngesting] = useState(false);
+  const [demoId, setDemoId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<{ role: "visitor" | "agent"; content: string }[]>([]);
+  const [input, setInput] = useState("");
+  const [loadingReply, setLoadingReply] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [capturedLead, setCapturedLead] = useState<any>(null);
+
+  const startDemo = async (payload: { vertical?: string; url?: string }) => {
+    setIngesting(true);
+    setError(null);
+    setDemoId(null);
+    setConversationId(null);
+    setMessages([]);
+    setCapturedLead(null);
+    try {
+      const res = await api.post("/public/demo/ingest", payload);
+      setDemoId(res.demoId);
+      setMessages([{ role: "agent", content: res.greeting }]);
+    } catch (err: any) {
+      setError(err.message || "Failed to initialize demo. Please try again.");
+    } finally {
+      setIngesting(false);
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || !demoId || loadingReply) return;
+
+    const userMsg = input.trim();
+    setInput("");
+    setMessages((prev) => [...prev, { role: "visitor", content: userMsg }]);
+    setLoadingReply(true);
+
+    try {
+      const res = await api.post("/public/demo/chat", {
+        demoId,
+        message: userMsg,
+        conversationId: conversationId || undefined,
+      });
+      if (res.conversationId) {
+        setConversationId(res.conversationId);
+      }
+      setMessages((prev) => [...prev, { role: "agent", content: res.reply }]);
+      if (res.captured) {
+        setCapturedLead({ fields: res.captured.fields, score: res.score });
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to get response");
+    } finally {
+      setLoadingReply(false);
+    }
+  };
+
+  return (
+    <div className="relative w-full max-w-md mx-auto">
+      {/* Glow Effects */}
+      <div className="absolute inset-0 bg-emerald-500/5 blur-[50px] rounded-[32px] pointer-events-none -z-10" />
+
+      <div className="card overflow-hidden flex flex-col h-[520px] shadow-lift border border-line bg-surface relative z-10">
+        {/* Header Tabs */}
+        <div className="flex border-b border-line shrink-0">
+          <button
+            onClick={() => {
+              setMode("A");
+              setDemoId(null);
+              setMessages([]);
+              setCapturedLead(null);
+            }}
+            className={`flex-1 py-3 text-center text-[13px] font-bold transition ${
+              mode === "A"
+                ? "bg-emerald-50 text-emerald-700 border-b-2 border-emerald-600"
+                : "text-ink-muted hover:bg-emerald-50/30"
+            }`}
+          >
+            🏢 Sample Templates
+          </button>
+          <button
+            onClick={() => {
+              setMode("B");
+              setDemoId(null);
+              setMessages([]);
+              setCapturedLead(null);
+            }}
+            className={`flex-1 py-3 text-center text-[13px] font-bold transition ${
+              mode === "B"
+                ? "bg-emerald-50 text-emerald-700 border-b-2 border-emerald-600"
+                : "text-ink-muted hover:bg-emerald-50/30"
+            }`}
+          >
+            🔗 Scan Your Website
+          </button>
+        </div>
+
+        {/* Content Pane */}
+        {!demoId ? (
+          <div className="flex-1 flex flex-col justify-center p-6 text-center">
+            {mode === "A" ? (
+              <div className="space-y-4">
+                <h4 className="font-display font-bold text-base">Select a business vertical</h4>
+                <p className="text-ink-muted text-[13px]">Experience a grounded AI agent trained on sample business documentation.</p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {[
+                    { id: "saas", label: "SaaS Platform" },
+                    { id: "real_estate", label: "Real Estate" },
+                    { id: "agency", label: "Marketing Agency" },
+                    { id: "services", label: "Home Services" },
+                  ].map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => {
+                        setVertical(v.id);
+                        startDemo({ vertical: v.id });
+                      }}
+                      disabled={ingesting}
+                      className={`py-3.5 px-3 border border-line rounded-xl font-semibold text-xs transition text-center hover:border-mint-300 hover:bg-emerald-50/30 ${
+                        vertical === v.id ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "text-ink"
+                      }`}
+                    >
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <h4 className="font-display font-bold text-base">Train AI on your live website</h4>
+                <p className="text-ink-muted text-[13px]">Paste your URL. Our crawler will index your home page to ground the AI assistant in 10 seconds.</p>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!url.trim()) return;
+                    startDemo({ url: url.trim() });
+                  }}
+                  className="space-y-3"
+                >
+                  <input
+                    required
+                    type="url"
+                    placeholder="https://yourwebsite.com"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    disabled={ingesting}
+                    className="input text-center text-sm"
+                  />
+                  <button
+                    type="submit"
+                    disabled={ingesting || !url.trim()}
+                    className="btn btn-primary w-full flex items-center justify-center gap-1.5"
+                  >
+                    {ingesting ? (
+                      <>
+                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Scraping & Training...
+                      </>
+                    ) : (
+                      <>Scan Website & Build Agent</>
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {ingesting && mode === "A" && (
+              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-ink-muted">
+                <span className="w-3 h-3 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                Initializing sandbox employee...
+              </div>
+            )}
+
+            {error && (
+              <div className="mt-4 p-2.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
+                ⚠ {error}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Chat Active Interface */
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Context Header */}
+            <div className="bg-surface-2 px-4 py-2.5 border-b border-line flex items-center gap-2 text-xs shrink-0">
+              <span className="w-2 h-2 bg-success rounded-full pulse-dot" />
+              <span className="text-ink font-semibold">
+                {mode === "A" ? `Vertical Sandbox (${vertical.toUpperCase()})` : `Website Scan: ${url}`}
+              </span>
+              <button
+                onClick={() => {
+                  setDemoId(null);
+                  setMessages([]);
+                  setCapturedLead(null);
+                }}
+                className="ml-auto text-emerald-700 font-bold hover:underline"
+              >
+                Reset
+              </button>
+            </div>
+
+            {/* Chat List */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-3.5">
+              {messages.map((m, idx) => {
+                const isAgent = m.role === "agent";
+                return (
+                  <div key={idx} className={`max-w-[85%] flex flex-col ${isAgent ? "items-start" : "items-end ml-auto"}`}>
+                    <div className="text-[10px] text-ink-muted mb-0.5 uppercase tracking-wider font-bold">
+                      {isAgent ? "Demo Agent" : "You"}
+                    </div>
+                    <div
+                      className={`px-3 py-2 rounded-2xl text-[12.5px] leading-relaxed inline-block border ${
+                        isAgent
+                          ? "bg-emerald-50 border-mint-300 rounded-tl-sm text-ink"
+                          : "bg-surface-2 border-line rounded-tr-sm text-ink"
+                      }`}
+                    >
+                      {m.content}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {loadingReply && (
+                <div className="max-w-[85%] flex flex-col items-start">
+                  <div className="text-[10px] text-ink-muted mb-0.5 uppercase font-bold">Demo Agent</div>
+                  <div className="px-3.5 py-3 rounded-2xl bg-emerald-50 border border-mint-300 rounded-tl-sm flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
+                    <span className="w-1.5 h-1.5 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                    <span className="w-1.5 h-1.5 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Lead Captured Alert Banner */}
+              {capturedLead && (
+                <div className="p-3 bg-emerald-50 border border-mint-300 rounded-2xl flex items-start gap-2.5 animate-bounce-once mt-2">
+                  <span className="text-[14px]">🎯</span>
+                  <div className="text-left">
+                    <b className="text-[12px] text-emerald-800 font-bold block">Autopilot: Lead Captured!</b>
+                    <span className="text-[11px] text-ink-muted leading-tight block">
+                      AI identified buying intent ({capturedLead.score}) and captured: {capturedLead.fields.join(", ")}.
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input Form */}
+            <form onSubmit={handleSendMessage} className="p-3 border-t border-line flex gap-2 bg-surface-2 shrink-0">
+              <input
+                required
+                placeholder="Ask the AI a question..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={loadingReply}
+                className="input !bg-surface text-[12.5px]"
+              />
+              <button type="submit" disabled={loadingReply} className="btn btn-primary !py-2.5 text-xs font-bold px-3">
+                Send
+              </button>
+            </form>
+
+            {/* Deploy Call-To-Action footer */}
+            <div className="bg-emerald-900 text-white text-center py-2 px-3 text-[11px] font-semibold flex items-center justify-between shrink-0">
+              <span>Deploy this AI employee on your website in 5 mins</span>
+              <Link to="/signup" className="underline hover:text-emerald-200">Get Started →</Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* =============================== HOME ============================= */
 export function Home() {
   return (
@@ -260,32 +538,7 @@ export function Home() {
 
           {/* product visual */}
           <div className="relative fadeup" style={{ animationDelay: ".18s" }}>
-            <div className="card p-5 relative z-10" style={{ animation: "floaty 6s ease-in-out infinite" }}>
-              <div className="flex items-center gap-2 pb-3 border-b border-line">
-                <span className="w-7 h-7 rounded-lg bg-emerald-600 grid place-items-center"><I.Sparkle width={14} height={14} fill="#fff" /></span>
-                <b className="text-[13.5px] font-semibold">Kali</b>
-                <span className="ml-auto inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-emerald-700"><span className="w-[7px] h-[7px] rounded-full bg-success pulse-dot" /> Online</span>
-              </div>
-              <div className="space-y-2.5 text-[13px] py-3.5">
-                <div className="bg-surface-2 border border-line rounded-xl rounded-tl-[3px] px-3 py-2 inline-block max-w-[85%]">Do you work with agencies?</div>
-                <div className="bg-emerald-50 border border-mint-300 rounded-xl rounded-tr-[3px] px-3 py-2 ml-auto max-w-[88%] text-left">Absolutely — agencies are one of our core users! Can I grab your email to send details?</div>
-                <div className="bg-surface-2 border border-line rounded-xl rounded-tl-[3px] px-3 py-2 inline-block">jane@brightco.com</div>
-              </div>
-              <div className="flex items-center gap-2.5 bg-mint-100 rounded-xl px-3 py-2.5 mt-1">
-                <span className="inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full bg-[#fdeceb] text-hot"><span className="w-1.5 h-1.5 rounded-full bg-hot" /> Hot</span>
-                <span className="text-[13px] font-semibold">Lead captured</span>
-                <span className="ml-auto text-[12px] text-emerald-700 font-semibold">→ Dashboard</span>
-              </div>
-            </div>
-            {/* floating chips */}
-            <div className="card px-3.5 py-2.5 absolute -left-5 top-24 z-20 hidden sm:flex items-center gap-2 shadow-lift" style={{ animation: "floaty2 5s ease-in-out infinite" }}>
-              <span className="w-7 h-7 rounded-full bg-emerald-600 text-white grid place-items-center"><I.Mic width={14} height={14} /></span>
-              <span className="text-[12px] font-semibold leading-tight">Voice agent<br /><span className="text-ink-muted font-normal">answering a call</span></span>
-            </div>
-            <div className="card px-4 py-3 absolute -right-3 -bottom-4 z-20 hidden sm:block shadow-lift" style={{ animation: "floaty 7s ease-in-out infinite" }}>
-              <div className="text-[11px] text-ink-muted font-semibold">Leads this week</div>
-              <div className="font-display text-2xl font-bold leading-none mt-0.5">34 <span className="text-success text-[12px] font-semibold align-middle">▲ 8%</span></div>
-            </div>
+            <InteractiveDemo />
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { LlmService } from '../llm/llm.service';
 import { KbService } from '../kb/kb.service';
+import { BillingService } from '../billing/billing.service';
 
 @Injectable()
 export class ConversationService {
@@ -9,6 +10,7 @@ export class ConversationService {
     private prisma: PrismaService,
     private llmService: LlmService,
     private kbService: KbService,
+    private billingService: BillingService,
   ) {}
 
   async findMany(workspaceId: string, tab?: string) {
@@ -277,6 +279,9 @@ export class ConversationService {
         visitorLabel: name || convo.visitorLabel || (email ? email.split('@')[0] : undefined),
       },
     });
+
+    // Record billing usage event
+    await this.billingService.recordUsageEvent(workspaceId, 'chat_message', 1, agent?.id || null);
 
     return {
       conversationId: convo.id,
