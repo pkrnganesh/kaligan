@@ -172,6 +172,11 @@ ${transcript}
    * Helper mock grounded answer generator
    */
   private generateMockGroundedReply(message: string, context: string, agentName: string): string {
+    const lowerMsg = message.toLowerCase().trim();
+    if (lowerMsg === 'hi' || lowerMsg === 'hello' || lowerMsg === 'hey' || lowerMsg === 'greetings') {
+      return `Hello! I am your ${agentName}. How can I help you today?`;
+    }
+
     const cleanContext = (context || '').replace(/No relevant information found./i, '').trim();
     
     if (!cleanContext) {
@@ -237,8 +242,8 @@ ${transcript}
       return `${bestBlock}\n\nLet me know if you need more details!`;
     }
 
-    // Fallback: If no query words matched, return the first block
-    return `${blocks[0]}\n\nLet me know if that helps!`;
+    // Fallback: If no query words matched, return a polite grounded response
+    return `I don't have specific details on that in my knowledge base. Can I take your contact details (name, email, phone) so someone can get back to you?`;
   }
 
   /**

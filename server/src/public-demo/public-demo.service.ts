@@ -111,6 +111,7 @@ export class PublicDemoService implements OnModuleInit, OnModuleDestroy {
       demoId: workspace.id,
       agentId: agent.id,
       greeting: agent.greeting,
+      publicKey: workspace.publicKey,
     };
   }
 

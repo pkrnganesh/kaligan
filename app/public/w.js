@@ -57,15 +57,14 @@ var Rc=Object.defineProperty;var wc=(me,ie,re)=>ie in me?Rc(me,ie,{enumerable:!0
   transform: scale(0.95);
 }
 
-/* Main Chat Panel */
 .kg-panel {
   position: fixed;
-  bottom: 96px;
-  right: 24px;
-  width: 380px;
-  height: 600px;
-  max-height: calc(100vh - 120px);
-  border-radius: 20px;
+  bottom: 85px;
+  right: 20px;
+  width: 340px;
+  height: 500px;
+  max-height: calc(100vh - 110px);
+  border-radius: 16px;
   background: var(--bg-color);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-main);
@@ -90,7 +89,7 @@ var Rc=Object.defineProperty;var wc=(me,ie,re)=>ie in me?Rc(me,ie,{enumerable:!0
 
 /* Header */
 .kg-header {
-  padding: 16px 20px;
+  padding: 12px 16px;
   background: var(--primary-color);
   color: var(--text-white);
   display: flex;
@@ -106,15 +105,15 @@ var Rc=Object.defineProperty;var wc=(me,ie,re)=>ie in me?Rc(me,ie,{enumerable:!0
 }
 
 .kg-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 15px;
   text-transform: uppercase;
 }
 
@@ -167,7 +166,7 @@ var Rc=Object.defineProperty;var wc=(me,ie,re)=>ie in me?Rc(me,ie,{enumerable:!0
 /* Messages Body */
 .kg-messages {
   flex: 1;
-  padding: 20px;
+  padding: 16px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

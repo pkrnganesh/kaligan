@@ -12,7 +12,7 @@ import { Settings, Onboarding } from "./pages/Misc";
 import ChatAgents from "./pages/ChatAgents";
 import ChatAgentBuilder from "./pages/ChatAgentBuilder";
 import Calls from "./pages/Calls";
-import { Login, Signup, Forgot, MarketingShell, Home, Features, Pricing, About, Contact } from "./Public";
+import { Login, Signup, Forgot, MarketingShell, Home, Features, Pricing, About, Contact, Compare, MarketingPage } from "./Public";
 import { AuthProvider, useAuth } from "./lib/auth";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -60,6 +60,8 @@ export default function App() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/compare/:competitor" element={<Compare />} />
+          <Route path="/blog" element={<MarketingPage title="Blog" />} />
         </Route>
 
         {/* auth */}

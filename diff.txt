@@ -1,0 +1,876 @@
+﻿diff --git a/app/src/Public.tsx b/app/src/Public.tsx
+index 99519dd..945326b 100644
+--- a/app/src/Public.tsx
++++ b/app/src/Public.tsx
+@@ -1,5 +1,5 @@
+-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+-import { useState } from "react";
++import { Link, NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
++import { useState, useEffect, useRef } from "react";
+ import type { ReactNode, CSSProperties } from "react";
+ import * as I from "./components/icons";
+ import { useAuth } from "./lib/auth";
+@@ -160,9 +160,14 @@ export const Signup = () => <AuthShell to="signup" title="Start free" sub="Your
+ export const Forgot = () => <AuthShell to="forgot" title="Reset password" sub="We'll email you a reset link." cta="Send reset link" foot={<Link to="/login" className="text-emerald-600 font-semibold">Back to login</Link>} />;
+ 
+ /* ============================ PRIMITIVES ========================== */
+-function Glow({ className = "", style }: { className?: string; style?: CSSProperties }) {
+-  return <div aria-hidden className={`absolute pointer-events-none -z-10 w-[520px] h-[520px] rounded-full blur-[90px] opacity-60 ${className}`}
+-    style={{ background: "radial-gradient(circle,#BFE6CE 0%,rgba(95,201,176,.35) 45%,transparent 70%)", ...style }} />;
++function Glow({ className = "", style, variant = 1 }: { className?: string; style?: CSSProperties; variant?: 1 | 2 }) {
++  const anim = variant === 1 ? "glow-drift-1 14s ease-in-out infinite" : "glow-drift-2 18s ease-in-out infinite";
++  return <div aria-hidden className={`absolute pointer-events-none -z-10 w-[580px] h-[580px] rounded-full blur-[100px] opacity-50 ${className}`}
++    style={{ background: variant === 1 
++      ? "radial-gradient(circle,#BFE6CE 0%,rgba(95,201,176,.35) 45%,transparent 70%)"
++      : "radial-gradient(circle,#CFF3E6 0%,rgba(178,228,206,.25) 50%,transparent 75%)",
++      animation: anim,
++      ...style }} />;
+ }
+ function Dots({ className = "" }: { className?: string }) {
+   return <div aria-hidden className={`absolute pointer-events-none -z-10 ${className}`}
+@@ -185,13 +190,28 @@ function SectionHead({ eyebrow, title, sub }: { eyebrow: string; title: string;
+ 
+ /* ============================ MARKETING SHELL ===================== */
+ export function MarketingShell() {
++  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+   const link = ({ isActive }: { isActive: boolean }) => `text-[14px] font-medium transition ${isActive ? "text-emerald-700" : "text-ink hover:text-emerald-600"}`;
++  const mobileLink = ({ isActive }: { isActive: boolean }) => `block py-3 px-4 text-base font-semibold border-b border-line/50 transition ${isActive ? "text-emerald-700 bg-emerald-50/50" : "text-ink hover:bg-surface-2"}`;
++
+   return (
+     <div className="min-h-screen flex flex-col">
+-      <style>{`@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}@keyframes floaty2{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}`}</style>
+-      <header className="sticky top-0 z-30 backdrop-blur bg-canvas/75 border-b border-line/70">
++      <style>{`
++        @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
++        @keyframes floaty2{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
++        @keyframes glow-drift-1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-50px) scale(1.15)}}
++        @keyframes glow-drift-2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-50px,30px) scale(0.9)}}
++        @keyframes bounce-once{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
++        .animate-bounce-once{animation:bounce-once 0.6s ease-in-out 1}
++      `}</style>
++      <header className="sticky top-0 z-30 backdrop-blur-md bg-canvas/80 border-b border-line/75">
+         <div className="flex items-center gap-6 px-6 md:px-8 py-3.5 max-w-6xl mx-auto">
+-          <Link to="/" className="flex items-center gap-2 mr-2"><span className="w-8 h-8 rounded-[9px] bg-emerald-600 grid place-items-center shadow-soft"><I.Sparkle width={16} height={16} fill="#fff" /></span><span className="font-display font-bold">KaliGanAI</span></Link>
++          <Link to="/" className="flex items-center gap-2 mr-2">
++            <span className="w-8 h-8 rounded-[9px] bg-emerald-600 grid place-items-center shadow-soft">
++              <I.Sparkle width={16} height={16} fill="#fff" />
++            </span>
++            <span className="font-display font-bold text-lg tracking-tight">KaliGanAI</span>
++          </Link>
+           <nav className="hidden md:flex items-center gap-6">
+             <NavLink to="/features" className={link}>Features</NavLink>
+             <NavLink to="/pricing" className={link}>Pricing</NavLink>
+@@ -199,19 +219,49 @@ export function MarketingShell() {
+             <NavLink to="/contact" className={link}>Contact</NavLink>
+           </nav>
+           <div className="ml-auto flex items-center gap-3">
+-            <Link to="/login" className="text-[14px] font-semibold hidden sm:inline">Log in</Link>
+-            <Link to="/signup" className="btn btn-primary !py-2">Start free</Link>
++            <Link to="/login" className="text-[14px] font-semibold hidden sm:inline-block text-ink hover:text-emerald-700 transition">Log in</Link>
++            <Link to="/signup" className="btn btn-primary !py-2 px-4">Start free</Link>
++            <button
++              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
++              className="md:hidden p-1.5 text-ink hover:text-emerald-700 transition rounded-lg hover:bg-surface-2 focus:outline-none"
++              aria-label="Toggle menu"
++            >
++              {mobileMenuOpen ? (
++                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
++                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
++                </svg>
++              ) : (
++                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
++                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
++                </svg>
++              )}
++            </button>
+           </div>
+         </div>
++        {mobileMenuOpen && (
++          <div className="md:hidden border-b border-line bg-canvas/95 backdrop-blur-md absolute top-full left-0 right-0 z-20 shadow-md">
++            <nav className="py-2 flex flex-col">
++              <NavLink to="/features" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Features</NavLink>
++              <NavLink to="/pricing" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Pricing</NavLink>
++              <NavLink to="/about" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>About</NavLink>
++              <NavLink to="/contact" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Contact</NavLink>
++              <div className="p-4 flex flex-col gap-3">
++                <Link to="/login" className="text-center font-semibold py-2 text-sm text-ink hover:text-emerald-700" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
++                <Link to="/signup" className="btn btn-primary text-center !py-2.5 text-sm" onClick={() => setMobileMenuOpen(false)}>Start free</Link>
++              </div>
++            </nav>
++          </div>
++        )}
+       </header>
+       <div className="flex-1"><Outlet /></div>
+       <footer className="border-t border-line bg-surface-2">
+-        <div className="max-w-6xl mx-auto px-8 py-12 grid md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-8">
+-          <div>
++        <div className="max-w-6xl mx-auto px-8 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
++          <div className="col-span-2 md:col-span-1">
+             <div className="flex items-center gap-2 mb-3"><span className="w-7 h-7 rounded-lg bg-emerald-600 grid place-items-center"><I.Sparkle width={14} height={14} fill="#fff" /></span><span className="font-display font-bold">KaliGanAI</span></div>
+-            <p className="text-ink-muted text-[13.5px] max-w-[230px]">The AI employee that turns website visitors into qualified leads ΓÇö over chat and voice.</p>
++            <p className="text-ink-muted text-[13px] leading-relaxed max-w-[230px]">The AI employee that turns website visitors into qualified leads ΓÇö over chat and voice.</p>
+           </div>
+           {[["Product", ["Features", "/features"], ["Pricing", "/pricing"], ["Log in", "/login"]],
++            ["Compare", ["vs Wrappers", "/compare/chatgpt"], ["vs Voice APIs", "/compare/vapi"], ["vs Legacy Chatbots", "/compare/generic"]],
+             ["Company", ["About", "/about"], ["Contact", "/contact"]],
+             ["Legal", ["Privacy", "/"], ["Terms", "/"]]].map((col) => (
+             <div key={col[0] as string}>
+@@ -231,7 +281,6 @@ export function MarketingShell() {
+ }
+ 
+ function InteractiveDemo() {
+-  const navigate = useNavigate();
+   const [mode, setMode] = useState<"A" | "B">("A");
+   const [vertical, setVertical] = useState("saas");
+   const [url, setUrl] = useState("");
+@@ -511,27 +560,28 @@ function InteractiveDemo() {
+ /* =============================== HOME ============================= */
+ export function Home() {
+   return (
+-    <main>
++    <main className="relative overflow-hidden bg-gradient-to-br from-canvas via-[#EDF5DE] to-[#E5EED1]">
+       {/* HERO */}
+-      <section className="relative overflow-hidden">
+-        <Glow className="-top-44 right-[-120px]" />
+-        <Dots className="inset-0" />
+-        <div className="max-w-6xl mx-auto px-6 md:px-8 pt-16 md:pt-20 pb-16 grid md:grid-cols-[1.05fr_.95fr] gap-12 items-center">
++      <section className="relative pt-16 md:pt-20 pb-16">
++        <Glow className="-top-44 right-[-120px] opacity-60" variant={1} />
++        <Glow className="top-1/3 left-[-200px] opacity-40" variant={2} />
++        <Dots className="inset-0 opacity-70" />
++        <div className="max-w-6xl mx-auto px-6 md:px-8 grid md:grid-cols-[1.05fr_.95fr] gap-12 items-center relative z-10">
+           <div>
+             <div className="fadeup"><Eyebrow>AI employee ┬╖ chat + voice</Eyebrow></div>
+-            <h1 className="font-display text-[40px] md:text-[54px] font-bold leading-[1.05] mt-5 fadeup" style={{ animationDelay: ".05s" }}>
+-              Turn website visitors into <span className="text-emerald-600">qualified leads</span> ΓÇö automatically.
++            <h1 className="font-display text-[42px] md:text-[58px] font-bold leading-[1.03] mt-5 fadeup text-ink" style={{ animationDelay: ".05s" }}>
++              Turn website visitors into <span className="text-emerald-700 font-extrabold relative inline-block">qualified leads<span className="absolute bottom-1 left-0 w-full h-[6px] bg-teal-200/60 -z-10 rounded-full" /></span> ΓÇö automatically.
+             </h1>
+-            <p className="text-ink-muted text-[16.5px] leading-relaxed mt-5 max-w-lg fadeup" style={{ animationDelay: ".1s" }}>
++            <p className="text-ink-muted text-[17px] leading-relaxed mt-5 max-w-lg fadeup" style={{ animationDelay: ".1s" }}>
+               KaliGanAI answers from your own business knowledge, qualifies interest, and captures the lead ΓÇö 24/7, over chat and voice. No made-up answers. No missed visitors.
+             </p>
+-            <div className="flex flex-wrap gap-3 mt-7 fadeup" style={{ animationDelay: ".15s" }}>
+-              <Link to="/signup" className="btn btn-primary !px-7 !py-3 text-[15px]">Start free <I.ArrowRight width={16} height={16} /></Link>
+-              <a href="#how" className="btn btn-ghost !px-7 !py-3 text-[15px]">See how it works</a>
++            <div className="flex flex-wrap gap-3 mt-8 fadeup" style={{ animationDelay: ".15s" }}>
++              <Link to="/signup" className="btn btn-primary !px-8 !py-3.5 text-[15.5px] shadow-lift hover:translate-y-[-1px] transition-transform duration-200">Start free <I.ArrowRight width={16} height={16} /></Link>
++              <a href="#how" className="btn btn-ghost !px-8 !py-3.5 text-[15.5px] hover:translate-y-[-1px] transition-transform duration-200">See how it works</a>
+             </div>
+-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-6 text-[13px] text-ink-muted fadeup" style={{ animationDelay: ".2s" }}>
++            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-7 text-[13px] text-ink-muted/90 fadeup" style={{ animationDelay: ".2s" }}>
+               {["No code ΓÇö one snippet", "Live in 5 minutes", "Cancel anytime"].map((t) => (
+-                <span key={t} className="inline-flex items-center gap-1.5"><I.Check width={14} height={14} className="text-success" />{t}</span>
++                <span key={t} className="inline-flex items-center gap-1.5 font-medium"><I.Check width={14} height={14} className="text-success" strokeWidth={2.5} />{t}</span>
+               ))}
+             </div>
+           </div>
+@@ -541,113 +591,123 @@ export function Home() {
+             <InteractiveDemo />
+           </div>
+         </div>
+-
+-        {/* trust strip */}
+-        <div className="border-y border-line bg-surface-2/60">
+-          <div className="max-w-5xl mx-auto px-8 py-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-ink-muted">
+-            <span className="text-[12.5px] font-semibold uppercase tracking-wide">Built for</span>
+-            {["Agencies", "Consultants", "SaaS", "Real estate", "Local services"].map((t) => (
+-              <span key={t} className="font-display font-semibold text-[15px] text-ink/70">{t}</span>
+-            ))}
+-          </div>
+-        </div>
+       </section>
+ 
++      {/* Trust Strip */}
++      <LogoStrip />
++
+       {/* HOW IT WORKS */}
+-      <section id="how" className="max-w-6xl mx-auto px-6 md:px-8 py-20">
++      <section id="how" className="max-w-6xl mx-auto px-6 md:px-8 py-24 relative z-10">
+         <SectionHead eyebrow="3 steps ┬╖ 5 minutes" title="From visitor to lead, on autopilot" sub="No engineers, no long setup. Teach it once and it works around the clock." />
+-        <div className="grid md:grid-cols-3 gap-5">
++        <div className="grid md:grid-cols-3 gap-6">
+           {[
+             { t: "Teach it", d: "Upload PDFs, FAQs, or point it at your website. It learns only from what you give it.", icon: <I.Book width={20} height={20} /> },
+             { t: "Install it", d: "Paste one snippet on your site. Chat and voice go live instantly ΓÇö nothing to configure.", icon: <I.Code width={20} height={20} /> },
+             { t: "Capture leads", d: "It answers, qualifies, and drops every captured lead ΓÇö scored ΓÇö into your dashboard.", icon: <I.Users width={20} height={20} /> },
+           ].map((s, i) => (
+-            <div key={s.t} className="card p-6 relative fadeup" style={{ animationDelay: `${i * 0.07}s` }}>
++            <div key={s.t} className="backdrop-blur-md bg-white/40 border border-white/50 shadow-lift rounded-[22px] p-7 relative fadeup hover:shadow-xl hover:bg-white/60 transition-all duration-300" style={{ animationDelay: `${i * 0.07}s` }}>
+               <div className="flex items-center justify-between mb-4">
+-                <span className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 grid place-items-center">{s.icon}</span>
+-                <span className="font-display text-[28px] font-bold text-line">0{i + 1}</span>
++                <span className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-700 grid place-items-center shadow-soft">{s.icon}</span>
++                <span className="font-display text-[28px] font-bold text-emerald-700/20">0{i + 1}</span>
+               </div>
+-              <h3 className="font-display font-bold text-lg">{s.t}</h3>
+-              <p className="text-ink-muted text-[14px] mt-1.5 leading-relaxed">{s.d}</p>
++              <h3 className="font-display font-bold text-lg text-ink">{s.t}</h3>
++              <p className="text-ink-muted text-[14px] mt-2 leading-relaxed">{s.d}</p>
+             </div>
+           ))}
+         </div>
+       </section>
+ 
+       {/* FEATURE BENTO */}
+-      <section className="max-w-6xl mx-auto px-6 md:px-8 pb-20">
++      <section className="max-w-6xl mx-auto px-6 md:px-8 pb-24 relative z-10">
+         <SectionHead eyebrow="Everything in one place" title="An employee, not just a chatbot" sub="It doesn't just chat ΓÇö it knows your business, talks out loud, and brings you customers." />
+-        <div className="grid md:grid-cols-3 gap-4">
++        <div className="grid md:grid-cols-3 gap-6">
+           {/* big tile */}
+-          <div className="card p-6 md:col-span-2 fadeup">
+-            <div className="flex items-center gap-2.5 mb-3">
+-              <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center"><I.Sparkle width={20} height={20} /></span>
+-              <h3 className="font-display font-bold text-lg">Answers only from your knowledge</h3>
++          <div className="backdrop-blur-md bg-white/40 border border-white/50 shadow-lift rounded-[22px] p-7 hover:shadow-xl hover:border-emerald-600/30 hover:bg-white/60 transition-all duration-300 md:col-span-2 flex flex-col justify-between group fadeup">
++            <div>
++              <div className="flex items-center gap-2.5 mb-3">
++                <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center shadow-soft"><I.Sparkle width={20} height={20} /></span>
++                <h3 className="font-display font-bold text-lg text-ink">Answers only from your knowledge</h3>
++              </div>
++              <p className="text-ink-muted text-[14.5px] max-w-lg leading-relaxed">Grounded in your own documents and pages. If it doesn't know, it says so and offers to take details ΓÇö it never invents answers.</p>
+             </div>
+-            <p className="text-ink-muted text-[14.5px] max-w-md">Grounded in your own documents and pages. If it doesn't know, it says so and offers to take details ΓÇö it never invents answers.</p>
+-            <div className="grid grid-cols-3 gap-2.5 mt-5">
++            <div className="flex flex-wrap gap-2.5 mt-6">
+               {["≡ƒôä Services.pdf", "Γ¥ô Pricing FAQ", "≡ƒöù acme.com"].map((c) => (
+-                <span key={c} className="inline-flex items-center gap-2 bg-surface-2 border border-line rounded-full px-3 py-1.5 text-[12.5px] font-medium justify-center"><span className="w-[7px] h-[7px] rounded-full bg-success" />{c}</span>
++                <span key={c} className="inline-flex items-center gap-2 bg-white/80 border border-line rounded-full px-3 py-1.5 text-[12.5px] font-medium justify-center shadow-soft text-ink/80"><span className="w-[7px] h-[7px] rounded-full bg-success" />{c}</span>
+               ))}
+             </div>
+           </div>
++          
+           {/* voice tile */}
+-          <div className="card p-6 fadeup" style={{ animationDelay: ".06s" }}>
+-            <div className="flex items-center justify-between mb-3">
+-              <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center"><I.Mic width={20} height={20} /></span>
+-              <span className="text-[10px] font-bold bg-teal-400 text-[#08332a] px-2 py-0.5 rounded-full tracking-wide">NEW</span>
++          <div className="backdrop-blur-md bg-white/40 border border-white/50 shadow-lift rounded-[22px] p-7 hover:shadow-xl hover:border-emerald-600/30 hover:bg-white/60 transition-all duration-300 flex flex-col justify-between group fadeup" style={{ animationDelay: ".06s" }}>
++            <div>
++              <div className="flex items-center justify-between mb-3">
++                <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center shadow-soft"><I.Mic width={20} height={20} /></span>
++                <span className="text-[10px] font-bold bg-teal-200 text-[#08332a] px-2 py-0.5 rounded-full tracking-wide">NEW</span>
++              </div>
++              <h3 className="font-display font-bold text-lg text-ink">Talks, not just types</h3>
++              <p className="text-ink-muted text-[14.5px] mt-1.5 leading-relaxed">A real-time voice agent that speaks with visitors using the same knowledge base.</p>
++            </div>
++            <div className="mt-4 flex items-center justify-center p-3 bg-white/60 rounded-xl border border-line/45">
++              <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-success animate-ping"/> Live voice active</span>
+             </div>
+-            <h3 className="font-display font-bold text-lg">Talks, not just types</h3>
+-            <p className="text-ink-muted text-[14.5px] mt-1.5">A real-time voice agent that speaks with visitors using the same knowledge base.</p>
+           </div>
++
+           {/* lead scoring tile */}
+-          <div className="card p-6 fadeup" style={{ animationDelay: ".06s" }}>
+-            <h3 className="font-display font-bold text-lg flex items-center gap-2"><I.Bolt width={18} height={18} className="text-warm" /> Scored automatically</h3>
+-            <p className="text-ink-muted text-[14.5px] mt-1.5 mb-4">Every lead is graded so you know who to call first.</p>
++          <div className="backdrop-blur-md bg-white/40 border border-white/50 shadow-lift rounded-[22px] p-7 hover:shadow-xl hover:border-emerald-600/30 hover:bg-white/60 transition-all duration-300 flex flex-col justify-between group fadeup" style={{ animationDelay: ".06s" }}>
++            <div>
++              <h3 className="font-display font-bold text-lg flex items-center gap-2 mb-2 text-ink"><I.Bolt width={18} height={18} className="text-warm" /> Scored automatically</h3>
++              <p className="text-ink-muted text-[14.5px] mt-1.5 mb-4 leading-relaxed">Every lead is graded so you know who to call first.</p>
++            </div>
+             <div className="flex gap-2">
+-              {[["Hot", "bg-[#fdeceb] text-hot", "bg-hot"], ["Warm", "bg-[#fbf3df] text-warm", "bg-warm"], ["Cold", "bg-[#eaf2f7] text-cold", "bg-cold"]].map(([l, s, d]) => (
+-                <span key={l} className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-2.5 py-1 rounded-full ${s}`}><span className={`w-1.5 h-1.5 rounded-full ${d}`} />{l}</span>
++              {[["Hot", "bg-red-50 text-hot", "bg-hot"], ["Warm", "bg-amber-50 text-warm", "bg-warm"], ["Cold", "bg-blue-50 text-cold", "bg-cold"]].map(([l, s, d]) => (
++                <span key={l} className={`inline-flex items-center gap-1.5 text-[11.5px] font-bold px-3 py-1.5 rounded-full ${s}`}><span className={`w-1.5 h-1.5 rounded-full ${d}`} />{l}</span>
+               ))}
+             </div>
+           </div>
++
+           {/* dashboard tile */}
+-          <div className="card p-6 md:col-span-2 fadeup" style={{ animationDelay: ".06s" }}>
+-            <div className="flex items-center gap-2.5 mb-4">
+-              <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center"><I.Dashboard width={20} height={20} /></span>
+-              <h3 className="font-display font-bold text-lg">One clean dashboard</h3>
+-            </div>
+-            <div className="grid grid-cols-3 gap-3">
+-              {[["Conversations", "128"], ["Leads captured", "34"], ["Hot leads", "9"]].map(([k, v]) => (
+-                <div key={k} className="bg-surface-2 border border-line rounded-xl px-3 py-3">
+-                  <div className="text-[11.5px] text-ink-muted font-semibold">{k}</div>
+-                  <div className="font-display text-2xl font-bold mt-1 leading-none">{v}</div>
++          <div className="backdrop-blur-md bg-white/40 border border-white/50 shadow-lift rounded-[22px] p-7 hover:shadow-xl hover:border-emerald-600/30 hover:bg-white/60 transition-all duration-300 md:col-span-2 flex flex-col justify-between group fadeup" style={{ animationDelay: ".06s" }}>
++            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
++              <div>
++                <div className="flex items-center gap-2.5 mb-2">
++                  <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center shadow-soft"><I.Dashboard width={20} height={20} /></span>
++                  <h3 className="font-display font-bold text-lg text-ink">One clean dashboard</h3>
+                 </div>
+-              ))}
++                <p className="text-ink-muted text-[14px]">View conversations, transcripts, and capture details live as they happen.</p>
++              </div>
++              <div className="flex gap-2.5">
++                {[["Conversations", "128"], ["Leads captured", "34"]].map(([k, v]) => (
++                  <div key={k} className="bg-white/80 border border-line/60 rounded-xl px-3.5 py-2 text-center min-w-[90px] shadow-soft">
++                    <div className="text-[10px] text-ink-muted font-bold uppercase tracking-wider">{k.split(" ")[0]}</div>
++                    <div className="font-display text-lg font-bold mt-0.5 leading-none text-emerald-700">{v}</div>
++                  </div>
++                ))}
++              </div>
++            </div>
++            <div className="mt-2 bg-white/30 p-3 rounded-xl border border-line/45">
++              <div className="text-[11px] font-bold text-ink-muted uppercase tracking-wider mb-2.5 text-left">Live leads capture ticker</div>
++              <LiveLeadsTicker />
+             </div>
+           </div>
+         </div>
+       </section>
+ 
+       {/* VOICE HIGHLIGHT BAND */}
+-      <section className="max-w-6xl mx-auto px-6 md:px-8 pb-20">
+-        <div className="rounded-[24px] text-white overflow-hidden relative grid md:grid-cols-[1fr_.8fr] gap-8 items-center p-8 md:p-12"
+-          style={{ background: "linear-gradient(150deg,#0E7A5F,#0B5A45)" }}>
+-          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(220px 220px at 88% 10%,rgba(95,201,176,.4),transparent 70%)" }} />
++      <section className="max-w-6xl mx-auto px-6 md:px-8 pb-24 relative z-10">
++        <div className="rounded-[32px] text-white overflow-hidden relative grid md:grid-cols-[1.2fr_.8fr] gap-8 items-center p-8 md:p-12 shadow-lift"
++          style={{ background: "linear-gradient(150deg,#0B6E54,#074B39)" }}>
++          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(400px 400px at 85% 20%,rgba(95,201,176,.25),transparent 75%)" }} />
+           <div className="relative">
+-            <span className="inline-flex items-center gap-2 bg-white/15 border border-white/20 rounded-full px-3 py-1.5 text-[12.5px] font-semibold"><I.Mic width={13} height={13} /> Voice agent</span>
+-            <h2 className="font-display text-[30px] md:text-[36px] font-bold leading-[1.1] mt-4">Your visitors can just talk to it.</h2>
+-            <p className="text-white/85 text-[15.5px] mt-3 max-w-md">A natural, real-time voice conversation ΓÇö answering instantly from your knowledge base and capturing leads, the same as chat. The thing no plain chatbot does.</p>
+-            <Link to="/signup" className="btn bg-white text-emerald-700 hover:bg-[#eafaf3] !px-6 !py-3 mt-6 inline-flex">Try the voice agent</Link>
+-          </div>
+-          <div className="relative grid place-items-center py-2">
+-            <div className="absolute rounded-full border-2 border-white/30" style={{ width: 150, height: 150, animation: "ring 2.6s ease-out infinite" }} />
+-            <div className="absolute rounded-full border-2 border-white/30" style={{ width: 150, height: 150, animation: "ring 2.6s ease-out infinite 1.3s" }} />
+-            <div className="w-[92px] h-[92px] rounded-full grid place-items-center border border-white/30" style={{ background: "rgba(255,255,255,.16)" }}>
+-              <div className="flex items-end gap-[3px] h-[28px]">
+-                {[0, .15, .3, .45, .2].map((d, i) => <i key={i} className="w-[3px] rounded bg-[#CFF3E6]" style={{ animation: "eq .9s ease-in-out infinite", animationDelay: `${d}s`, height: 7 }} />)}
+-              </div>
++            <span className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1.5 text-[12.5px] font-semibold backdrop-blur-sm"><I.Mic width={13} height={13} /> Integrated Voice</span>
++            <h2 className="font-display text-[32px] md:text-[38px] font-bold leading-[1.1] mt-4">Speak directly with your AI employee.</h2>
++            <p className="text-white/80 text-[15.5px] mt-3 max-w-md">No robotic voices or lag. KaliGanAI carries natural, real-time voice calls answering from the same knowledge base as chat. Try the interactive simulator on the right to see it qualify a lead in real time.</p>
++            <div className="flex flex-wrap gap-3 mt-6">
++              <Link to="/signup" className="btn bg-white text-emerald-700 hover:bg-[#eafaf3] !px-6 !py-3 shadow-soft hover:translate-y-[-1px] transition-transform">Get Started</Link>
+             </div>
+           </div>
++          <div className="relative flex justify-center py-2 z-10">
++            <DialerMockup />
++          </div>
+         </div>
+       </section>
+ 
+@@ -964,3 +1024,520 @@ export function MarketingPage({ title }: { title: string }) {
+     </main>
+   );
+ }
++
++/* ============================ ADDITIONAL COMPONENTS ============================ */
++
++export function LogoStrip() {
++  const logos = [
++    {
++      name: "Aether",
++      icon: (
++        <svg className="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
++          <path d="M12 2L2 22h20L12 2z" />
++          <path d="M12 9l-5 8h10l-5-8z" />
++        </svg>
++      )
++    },
++    {
++      name: "Helix",
++      icon: (
++        <svg className="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
++          <path d="M4.5 16.5c1.5-1.5 3-4.5 6-4.5s4.5 3 6 4.5 4.5 1.5 6-1.5" />
++          <path d="M4.5 7.5c1.5 1.5 3 4.5 6 4.5s4.5-3 6-4.5 4.5-1.5 6 1.5" />
++        </svg>
++      )
++    },
++    {
++      name: "Vertex",
++      icon: (
++        <svg className="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
++          <path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" />
++          <circle cx="12" cy="12" r="3.5" fill="currentColor" fillOpacity="0.25" />
++        </svg>
++      )
++    },
++    {
++      name: "Aura",
++      icon: (
++        <svg className="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
++          <circle cx="12" cy="12" r="8" />
++          <circle cx="12" cy="12" r="4.5" strokeDasharray="2 2" />
++          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
++        </svg>
++      )
++    },
++    {
++      name: "Lumina",
++      icon: (
++        <svg className="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
++          <path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7z" />
++        </svg>
++      )
++    }
++  ];
++
++  return (
++    <div className="border-y border-line/60 bg-surface-2/45 backdrop-blur-sm py-7 overflow-hidden relative">
++      <div className="max-w-6xl mx-auto px-6 md:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
++        <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-ink-muted/75">Trusted by fast-growing brands</span>
++        <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-5">
++          {logos.map((logo) => (
++            <div key={logo.name} className="flex items-center gap-2.5 text-ink-muted/50 hover:text-emerald-700 transition-colors duration-300 cursor-pointer group">
++              <span className="transform group-hover:scale-110 transition-transform duration-300">{logo.icon}</span>
++              <span className="font-display font-bold text-[13px] tracking-[0.15em] uppercase">{logo.name}</span>
++            </div>
++          ))}
++        </div>
++      </div>
++    </div>
++  );
++}
++
++export function LiveLeadsTicker() {
++  const [leads, setLeads] = useState([
++    { name: "Sarah K.", business: "Acme SaaS", value: "$499/mo", score: "Hot", time: "just now", scoreVal: 98 },
++    { name: "James L.", business: "Apex Agency", value: "$1,200/mo", score: "Hot", time: "2 min ago", scoreVal: 94 },
++    { name: "Elena R.", business: "West Real Estate", value: "$2,500/mo", score: "Warm", time: "5 min ago", scoreVal: 82 },
++  ]);
++
++  useEffect(() => {
++    const interval = setInterval(() => {
++      setLeads((prev) => {
++        const next = [...prev];
++        const names = ["Marcus T.", "Dianne W.", "Robert C.", "Sofia B.", "Vikram S."];
++        const businesses = ["GrowthX", "Prime Properties", "SaaSify", "SolarTech", "Apex Retail"];
++        const values = ["$399/mo", "$899/mo", "$1,500/mo", "$3,000/mo", "$600/mo"];
++        const isHot = Math.random() > 0.3;
++        const score = isHot ? "Hot" : "Warm";
++        const scoreVal = isHot ? Math.floor(Math.random() * 15) + 85 : Math.floor(Math.random() * 15) + 70;
++
++        next.unshift({
++          name: names[Math.floor(Math.random() * names.length)],
++          business: businesses[Math.floor(Math.random() * businesses.length)],
++          value: values[Math.floor(Math.random() * values.length)],
++          score,
++          time: "just now",
++          scoreVal
++        });
++
++        for (let i = 1; i < next.length; i++) {
++          if (i === 1) next[i].time = "1 min ago";
++          else if (i === 2) next[i].time = "4 min ago";
++          else next[i].time = `${i * 3} min ago`;
++        }
++
++        if (next.length > 3) {
++          next.pop();
++        }
++        return next;
++      });
++    }, 4500);
++    return () => clearInterval(interval);
++  }, []);
++
++  return (
++    <div className="space-y-2.5">
++      {leads.map((lead, idx) => (
++        <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-white/70 border border-line/60 shadow-soft transition-all duration-500 hover:scale-[1.02] hover:bg-white text-left">
++          <div className="flex items-center gap-3">
++            <span className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0">
++              {lead.name.split(" ").map(n => n[0]).join("")}
++            </span>
++            <div className="text-left leading-tight">
++              <div className="text-[12.5px] font-bold text-ink leading-none">{lead.name}</div>
++              <div className="text-[10.5px] text-ink-muted mt-1">{lead.business} ┬╖ {lead.value}</div>
++            </div>
++          </div>
++          <div className="flex items-center gap-2 shrink-0">
++            <span className="text-[10.5px] text-ink-muted/80">{lead.time}</span>
++            <span className={`inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-full ${
++              lead.score === "Hot" ? "bg-red-50 text-hot" : "bg-amber-50 text-warm"
++            }`}>
++              <span className={`w-1 h-1 rounded-full ${lead.score === "Hot" ? "bg-hot" : "bg-warm"} animate-pulse`} />
++              {lead.scoreVal}%
++            </span>
++          </div>
++        </div>
++      ))}
++    </div>
++  );
++}
++
++export function DialerMockup() {
++  const [callStatus, setCallStatus] = useState<"idle" | "calling" | "connected" | "completed">("idle");
++  const [transcript, setTranscript] = useState<{ role: "ai" | "caller"; text: string }[]>([]);
++  const [activeSpeaker, setActiveSpeaker] = useState<"ai" | "caller" | null>(null);
++  const transcriptEndRef = useRef<HTMLDivElement>(null);
++  const timerRef = useRef<any>(null);
++
++  const script = [
++    { role: "ai", text: "Thanks for calling Acme SaaS. I'm your AI sales assistant. How can I help you today?" },
++    { role: "caller", text: "Hi, I need a tool that automatically captures website leads. Does your software support custom grounding?" },
++    { role: "ai", text: "Yes! KaliGanAI grounds its answers entirely on your specific website or docs. If it doesn't know the answer, it asks for customer info rather than making it up." },
++    { role: "caller", text: "That's exactly what we need. How much is the Growth plan?" },
++    { role: "ai", text: "The Growth plan is $129/mo and includes unlimited chat conversations and voice support. Can I send a signup link to your email?" },
++    { role: "caller", text: "Sure, my email is hello@acme.com." },
++    { role: "ai", text: "Perfect! I've sent the signup link to hello@acme.com. Lead captured! Talk to you soon." }
++  ];
++
++  useEffect(() => {
++    if (transcriptEndRef.current) {
++      transcriptEndRef.current.scrollIntoView({ behavior: "smooth" });
++    }
++  }, [transcript]);
++
++  const handleStartCall = () => {
++    setCallStatus("calling");
++    setTranscript([]);
++    setActiveSpeaker(null);
++    timerRef.current = setTimeout(() => {
++      setCallStatus("connected");
++      playDialogue(0);
++    }, 1500);
++  };
++
++  const playDialogue = (index: number) => {
++    if (index >= script.length) {
++      timerRef.current = setTimeout(() => {
++        setCallStatus("completed");
++        setActiveSpeaker(null);
++      }, 2000);
++      return;
++    }
++
++    const item = script[index];
++    setActiveSpeaker(item.role as "ai" | "caller");
++    setTranscript((prev) => [...prev, { role: item.role as "ai" | "caller", text: item.text }]);
++
++    timerRef.current = setTimeout(() => {
++      playDialogue(index + 1);
++    }, 3800);
++  };
++
++  const handleHangUp = () => {
++    if (timerRef.current) clearTimeout(timerRef.current);
++    setCallStatus("idle");
++    setTranscript([]);
++    setActiveSpeaker(null);
++  };
++
++  useEffect(() => {
++    return () => {
++      if (timerRef.current) clearTimeout(timerRef.current);
++    };
++  }, []);
++
++  return (
++    <div className="w-[280px] h-[360px] bg-slate-900 rounded-[36px] border-[6px] border-slate-800 shadow-2xl relative flex flex-col justify-between overflow-hidden text-white font-sans">
++      <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-24 h-4 bg-slate-800 rounded-b-xl z-20 flex items-center justify-center gap-1.5">
++        <span className="w-8 h-1 bg-slate-700 rounded-full" />
++        <span className="w-1.5 h-1.5 bg-slate-900 rounded-full" />
++      </div>
++
++      <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-emerald-950/40 -z-10" />
++
++      <div className="pt-7 text-center shrink-0">
++        <div className="text-[10px] uppercase tracking-[0.15em] text-slate-400 font-bold">Simulated Inbound Call</div>
++        <div className="text-base font-bold text-white mt-0.5">KaliGanAI Sales Agent</div>
++        <div className="text-[11px] text-emerald-400 mt-1 flex items-center justify-center gap-1.5">
++          {callStatus === "idle" && <span className="w-1.5 h-1.5 bg-slate-500 rounded-full" />}
++          {callStatus === "calling" && <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping" />}
++          {callStatus === "connected" && <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />}
++          {callStatus === "completed" && <span className="w-1.5 h-1.5 bg-slate-400 rounded-full" />}
++          <span className="capitalize font-semibold text-xs text-slate-300">
++            {callStatus === "idle" && "Ready to simulate"}
++            {callStatus === "calling" && "Ringing..."}
++            {callStatus === "connected" && "Active Session"}
++            {callStatus === "completed" && "Call Ended"}
++          </span>
++        </div>
++      </div>
++
++      <div className="flex-1 px-4 py-3 overflow-hidden flex flex-col justify-center">
++        {callStatus === "idle" && (
++          <div className="text-center space-y-4">
++            <button
++              onClick={handleStartCall}
++              className="w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lift transition-all hover:scale-105"
++            >
++              <I.Phone width={22} height={22} fill="#fff" className="animate-pulse" />
++            </button>
++            <p className="text-[11.5px] text-slate-400 max-w-[180px] mx-auto leading-relaxed">
++              Test how the AI assistant answers and captures lead information.
++            </p>
++          </div>
++        )}
++
++        {callStatus === "calling" && (
++          <div className="text-center py-6 relative">
++            <div className="absolute rounded-full border-2 border-emerald-500/30 inset-0 m-auto animate-ping" style={{ width: 100, height: 100 }} />
++            <div className="absolute rounded-full border border-emerald-500/20 inset-0 m-auto animate-ping" style={{ width: 130, height: 130, animationDelay: "0.5s" }} />
++            <div className="w-14 h-14 rounded-full bg-amber-500 text-white flex items-center justify-center mx-auto shadow-lift relative z-10">
++              <I.Phone width={22} height={22} fill="#fff" />
++            </div>
++          </div>
++        )}
++
++        {callStatus === "connected" && (
++          <div className="flex-1 flex flex-col h-full overflow-hidden">
++            <div className="h-10 flex items-center justify-center gap-1 shrink-0 mb-2">
++              {[...Array(9)].map((_, i) => {
++                const isTalking = activeSpeaker === "ai" || activeSpeaker === "caller";
++                const delay = `${i * 0.1}s`;
++                let animName = "none";
++                if (activeSpeaker === "ai") animName = "eq";
++                else if (activeSpeaker === "caller") animName = "eq-soft";
++                
++                return (
++                  <span
++                    key={i}
++                    className={`w-1 rounded-full transition-all duration-300 ${
++                      activeSpeaker === "ai" ? "bg-emerald-400" : "bg-slate-400"
++                    }`}
++                    style={{
++                      height: isTalking ? "12px" : "4px",
++                      animation: isTalking ? `${animName} 0.8s ease-in-out infinite` : "none",
++                      animationDelay: delay
++                    }}
++                  />
++                );
++              })}
++            </div>
++            
++            <style>{`
++              @keyframes eq-soft { 0%,100% { height:6px } 50% { height:14px } }
++            `}</style>
++
++            <div className="flex-1 overflow-y-auto bg-slate-950/60 border border-slate-800/80 rounded-2xl p-2.5 space-y-2 text-left text-[11px] leading-relaxed scrollbar-none">
++              {transcript.map((line, i) => (
++                <div key={i} className="space-y-0.5">
++                  <div className={`font-bold uppercase text-[9px] tracking-wider ${
++                    line.role === "ai" ? "text-emerald-400" : "text-slate-400"
++                  }`}>
++                    {line.role === "ai" ? "AI Agent" : "Caller"}
++                  </div>
++                  <div className="text-slate-200">{line.text}</div>
++                </div>
++              ))}
++              <div ref={transcriptEndRef} />
++            </div>
++          </div>
++        )}
++
++        {callStatus === "completed" && (
++          <div className="text-center space-y-3">
++            <span className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto">
++              <I.Check width={20} height={20} />
++            </span>
++            <div>
++              <div className="text-[12px] font-bold text-white">Call Successful</div>
++              <div className="text-[10px] text-slate-400 mt-0.5">Qualifying result:</div>
++            </div>
++            <div className="p-2.5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl max-w-[200px] mx-auto text-left shadow-inner">
++              <span className="block text-[8px] font-bold uppercase tracking-wider text-emerald-400">Lead Captured</span>
++              <span className="block text-[11px] font-semibold text-slate-200 mt-0.5 truncate">hello@acme.com</span>
++              <span className="inline-flex items-center gap-1 text-[9px] font-bold text-hot mt-1 bg-red-950/40 px-2 py-0.5 rounded-full border border-red-500/20">
++                <span className="w-1.5 h-1.5 bg-hot rounded-full animate-ping" />
++                Hot Lead (98%)
++              </span>
++            </div>
++            <button
++              onClick={handleStartCall}
++              className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 hover:underline mt-1 focus:outline-none"
++            >
++              Simulate Again
++            </button>
++          </div>
++        )}
++      </div>
++
++      <div className="pb-5 shrink-0 flex justify-center">
++        {callStatus !== "idle" && callStatus !== "completed" ? (
++          <button
++            onClick={handleHangUp}
++            className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-500 text-white flex items-center justify-center shadow-lift transition-all hover:scale-105"
++            aria-label="Hang up call"
++          >
++            <svg className="w-5 h-5 transform rotate-[135deg]" fill="currentColor" viewBox="0 0 24 24">
++              <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
++            </svg>
++          </button>
++        ) : (
++          <span className="text-[10px] text-slate-500 tracking-wide font-medium">Powered by Gemini Live Audio</span>
++        )}
++      </div>
++    </div>
++  );
++}
++
++const competitorData: Record<string, {
++  name: string;
++  tagline: string;
++  desc: string;
++  strength: string;
++  weakness: string;
++  features: { name: string; kaligan: boolean | string; competitor: boolean | string; desc: string }[];
++  summary: string;
++}> = {
++  chatgpt: {
++    name: "ChatGPT & LLM Wrappers",
++    tagline: "Why generic wrappers fall short of a dedicated lead employee.",
++    desc: "LLM wrappers simply pipe user inputs to ChatGPT. They lack session state, business RAG grounding, lead scoring pipelines, and multi-channel voice integrations.",
++    strength: "Cheap to spin up initially.",
++    weakness: "Hallucinates answers, does not capture structured lead data, requires custom coding for voice, zero database integrations.",
++    features: [
++      { name: "Chat Widget", kaligan: "Included (One snippet)", competitor: "Custom code / No widget", desc: "Out-of-the-box chat embed that works on any website." },
++      { name: "Voice Integration", kaligan: "Built-in (Web + BYON Phone)", competitor: "Requires Vapi/Twilio coding", desc: "Grounded voice conversations over browser and phone." },
++      { name: "Lead Qualification", kaligan: "Auto-Scored (Hot/Warm/Cold)", competitor: "None (Raw transcript)", desc: "AI automatically rates intent and routes leads." },
++      { name: "KB Grounding (RAG)", kaligan: "Yes (PDF, Crawler, FAQ)", competitor: "Manual prompt context only", desc: "Guaranteed business context with strict safety limits." },
++      { name: "Stripe Billing/Gating", kaligan: "Built-in limits", competitor: "None", desc: "Easy team billing limits and usage metering." },
++    ],
++    summary: "ChatGPT is a generic calculator; KaliGanAI is a trained sales employee."
++  },
++  vapi: {
++    name: "Vapi & Developer Voice APIs",
++    tagline: "A complete leads platform, not just a developer endpoint.",
++    desc: "Voice APIs provide excellent raw audio connections, but they leave RAG ingestion, database logging, lead scoring, and web chat widgets completely to you.",
++    strength: "Great voice latency for developers.",
++    weakness: "No built-in chat widget, no lead qualification dashboard, requires complex backend coding to connect data.",
++    features: [
++      { name: "Unified Chat + Voice", kaligan: "Yes (One KB template)", competitor: "Voice only (Separate tools)", desc: "Maintain single knowledge base for both text and voice agents." },
++      { name: "Built-in RAG / Crawler", kaligan: "Yes (Scrapes instantly)", competitor: "No (Build your own vector DB)", desc: "Index websites or docs without coding database connections." },
++      { name: "Lead Dashboard", kaligan: "Included (Full CRM sync)", competitor: "None (Developer logs)", desc: "View transcripts, outcomes, and contacts out-of-the-box." },
++      { name: "Setup Difficulty", kaligan: "Zero Code (5 minutes)", competitor: "High (Websockets, Node, Python)", desc: "Go live without setting up servers or media bridges." },
++      { name: "BYON Telephony", kaligan: "Included (Twilio webhook)", competitor: "Included", desc: "Connect your own phone number directly." },
++    ],
++    summary: "Why write thousands of lines of server orchestration when KaliGanAI does it all?"
++  },
++  generic: {
++    name: "Legacy Chatbots (Intercom / Drift)",
++    tagline: "Ditch the rigid rule-builders for intelligent reasoning.",
++    desc: "Legacy chatbots rely on complex drag-and-drop decision trees that frustrate visitors. They charge premium enterprise rates and do not support voice calls.",
++    strength: "Mature legacy integrations.",
++    weakness: "Extremely expensive, rule-based trees that break, no voice support, painful manual configuration.",
++    features: [
++      { name: "Reasoning Model", kaligan: "Generative AI + Grounding", competitor: "Rigid Rule-Tree / Extra charge", desc: "AI dynamically answers questions instead of forcing paths." },
++      { name: "Voice Support", kaligan: "Built-in Web + Phone", competitor: "None", desc: "Let customers speak directly to your agent." },
++      { name: "Setup Time", kaligan: "5 minutes (Automatic)", competitor: "Weeks of flow chart building", desc: "AI learns directly from your site docs instantly." },
++      { name: "Price Point", kaligan: "Sane pricing ($39/mo)", competitor: "Enterprise bloat ($400+/mo)", desc: "Pricing designed to scale with your team." },
++      { name: "Lead Scoring", kaligan: "AI-based intent analysis", competitor: "Manual form-fields only", desc: "Determine lead temperature based on semantic dialogue." },
++    ],
++    summary: "Upgrade from 2018 decision-trees to a 2026 AI teammate."
++  }
++};
++
++export function Compare() {
++  const { competitor } = useParams<{ competitor: string }>();
++  const compId = competitor && competitorData[competitor] ? competitor : "chatgpt";
++  const data = competitorData[compId];
++
++  return (
++    <main className="relative overflow-hidden bg-gradient-to-br from-canvas via-[#EDF5DE] to-[#E5EED1] pb-24 min-h-[70vh]">
++      <Glow className="-top-44 right-[-100px] opacity-60" />
++      <Dots className="inset-0 opacity-60" />
++      
++      <div className="max-w-4xl mx-auto px-6 md:px-8 pt-16 md:pt-20 relative z-10">
++        <div className="mb-6">
++          <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline">
++            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
++              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
++            </svg>
++            Back to Home
++          </Link>
++        </div>
++
++        <div className="text-center md:text-left mb-12">
++          <span className="inline-flex items-center gap-2 bg-emerald-50 border border-mint-300 rounded-full px-3 py-1.5 text-[11.5px] font-bold text-emerald-800 uppercase tracking-wider mb-4">
++            KaliGanAI vs {data.name}
++          </span>
++          <h1 className="font-display text-[36px] md:text-[46px] font-bold leading-[1.1] text-ink">
++            {data.tagline}
++          </h1>
++          <p className="text-ink-muted text-[16px] leading-relaxed mt-4 max-w-2xl">
++            {data.desc}
++          </p>
++        </div>
++
++        <div className="grid md:grid-cols-2 gap-4 mb-12">
++          <div className="p-5 rounded-2xl bg-emerald-50/60 border border-mint-300/50 backdrop-blur-sm">
++            <div className="font-display font-bold text-emerald-800 text-[12px] uppercase tracking-wider mb-2">Our Advantage</div>
++            <p className="text-ink text-[14px] leading-relaxed">
++              We sync both website chat and voice calls to a single, easily trained knowledge base. No coding servers or designing decision charts.
++            </p>
++          </div>
++          <div className="p-5 rounded-2xl bg-white/40 border border-line/60 backdrop-blur-sm">
++            <div className="font-display font-bold text-ink-muted text-[12px] uppercase tracking-wider mb-2">{data.name} Limits</div>
++            <p className="text-ink-muted text-[14px] leading-relaxed">
++              {data.weakness}
++            </p>
++          </div>
++        </div>
++
++        <div className="bg-white/60 backdrop-blur-md rounded-2xl border border-line shadow-lift overflow-hidden mb-12">
++          <div className="p-5 border-b border-line bg-surface-2/40">
++            <h3 className="font-display font-bold text-base text-ink">Feature Comparison Matrix</h3>
++            <p className="text-[12px] text-ink-muted">A clear breakdown of capabilities and setup time.</p>
++          </div>
++          <div className="overflow-x-auto">
++            <table className="w-full text-left border-collapse text-[13.5px]">
++              <thead>
++                <tr className="bg-surface-2 border-b border-line">
++                  <th className="p-4 font-bold text-ink">Capability</th>
++                  <th className="p-4 font-bold text-emerald-700">KaliGanAI</th>
++                  <th className="p-4 font-bold text-ink-muted">{data.name}</th>
++                </tr>
++              </thead>
++              <tbody className="divide-y divide-line/60">
++                {data.features.map((f, i) => (
++                  <tr key={i} className="hover:bg-white/40 transition-colors">
++                    <td className="p-4">
++                      <div className="font-bold text-ink">{f.name}</div>
++                      <div className="text-[11.5px] text-ink-muted mt-0.5 leading-normal">{f.desc}</div>
++                    </td>
++                    <td className="p-4 font-semibold text-emerald-800">
++                      <span className="flex items-center gap-1.5">
++                        <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
++                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
++                        </svg>
++                        {f.kaligan}
++                      </span>
++                    </td>
++                    <td className="p-4 text-ink-muted font-medium">
++                      {f.competitor === "None" || f.competitor.toString().includes("No") || f.competitor.toString().includes("Custom") ? (
++                        <span className="flex items-center gap-1.5 text-ink-muted/70">
++                          <svg className="w-3.5 h-3.5 text-ink-muted/50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
++                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
++                          </svg>
++                          {f.competitor}
++                        </span>
++                      ) : (
++                        <span className="flex items-center gap-1.5">
++                          {f.competitor}
++                        </span>
++                      )}
++                    </td>
++                  </tr>
++                ))}
++              </tbody>
++            </table>
++          </div>
++        </div>
++
++        <div className="p-7 rounded-2xl bg-emerald-900 text-white text-center shadow-lift relative overflow-hidden mb-12">
++          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(300px 300px at 50% 0%,rgba(95,201,176,.2),transparent 75%)" }} />
++          <span className="text-[20px] mb-2 block font-display italic">"{data.summary}"</span>
++          <div className="text-[12.5px] text-emerald-200/90 font-bold uppercase tracking-wider">Bottom Line</div>
++        </div>
++
++        <div className="bg-white/40 border border-line/60 rounded-3xl p-8 text-center backdrop-blur-md">
++          <h2 className="font-display text-2xl font-bold text-ink">Ready to deploy a true AI employee?</h2>
++          <p className="text-ink-muted text-sm mt-2 max-w-md mx-auto">Get live in 5 minutes with a single script embed. Start your free trial today, no credit card required.</p>
++          <div className="mt-6 flex justify-center gap-4">
++            <Link to="/signup" className="btn btn-primary px-6 py-2.5">Start Free Trial</Link>
++            <Link to="/contact" className="btn btn-ghost px-6 py-2.5">Talk to Us</Link>
++          </div>
++        </div>
++      </div>
++    </main>
++  );
++}
