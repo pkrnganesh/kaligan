@@ -307,7 +307,68 @@ export function MarketingShell() {
   );
 }
 
+const AI_EMPLOYEES = [
+  {
+    id: "maya",
+    name: "Maya",
+    title: "Maya — Sales Teammate",
+    role: "Sales & Growth",
+    desc: "Grounded lead capture assistant.",
+    vertical: "saas",
+    color: "from-emerald-600 to-emerald-700",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+    avatarBg: "bg-emerald-100 text-emerald-800",
+    badgeColor: "bg-emerald-100 text-emerald-800",
+    greeting: "Hi! I'm Maya, your Sales Assistant. I help turn website visitors into qualified leads. Want to see how I score leads or try a voice call?",
+    suggestions: [
+      { q: "💬 How does lead capture work?", text: "How does lead capture work?" },
+      { q: "📞 Can we make voice calls?", text: "Can we use voice calls?" },
+      { q: "💰 What are the pricing plans?", text: "What is the pricing?" }
+    ]
+  },
+  {
+    id: "dexter",
+    name: "Dexter",
+    title: "Dexter — Services Teammate",
+    role: "Local Services",
+    desc: "24/7 service & faq coordinator.",
+    vertical: "services",
+    color: "from-blue-600 to-blue-700",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+    avatarBg: "bg-blue-100 text-blue-800",
+    badgeColor: "bg-blue-100 text-blue-800",
+    greeting: "Hello! I'm Dexter. I coordinate house and commercial cleaning services. Ask me about pricing or booking slots!",
+    suggestions: [
+      { q: "🧹 What services do you offer?", text: "What services do you offer?" },
+      { q: "💰 Show me your pricing FAQ", text: "What is your pricing?" },
+      { q: "📅 How do I book a cleaning slot?", text: "How do I book a cleaning?" }
+    ]
+  },
+  {
+    id: "milli",
+    name: "Milli",
+    title: "Milli — Agency Scout",
+    role: "Marketing Agency",
+    desc: "Prospect qualification expert.",
+    vertical: "agency",
+    color: "from-violet-600 to-violet-700",
+    bgColor: "bg-violet-50",
+    borderColor: "border-violet-200",
+    avatarBg: "bg-violet-100 text-violet-800",
+    badgeColor: "bg-violet-100 text-violet-800",
+    greeting: "Hello! I'm Milli, representing Apex Digital. I identify prospective client needs. Want to check out our packages?",
+    suggestions: [
+      { q: "📈 What digital marketing packages do you have?", text: "What marketing packages do you offer?" },
+      { q: "⚡ How do I book a strategy session?", text: "How do I book a strategy session?" },
+      { q: "💼 Can you route leads to my CRM?", text: "How are leads captured?" }
+    ]
+  }
+];
+
 function InteractiveDemo() {
+  const [selectedEmployee, setSelectedEmployee] = useState(AI_EMPLOYEES[0]);
   const [isOpen, setIsOpen] = useState(true);
   const [mode, setMode] = useState<"A" | "B">("A");
   const [url, setUrl] = useState("");
@@ -385,7 +446,7 @@ function InteractiveDemo() {
     }
   }, [connectionState, voiceMessages]);
 
-  const startDemo = async (payload: { vertical?: string; url?: string }) => {
+  const startDemo = async (payload: { vertical?: string; url?: string }, customGreeting?: string) => {
     setIngesting(true);
     setError(null);
     setDemoId(null);
@@ -399,7 +460,7 @@ function InteractiveDemo() {
       setDemoId(res.demoId);
       setDemoAgentId(res.agentId);
       setDemoPublicKey(res.publicKey);
-      setMessages([{ role: "agent", content: res.greeting }]);
+      setMessages([{ role: "agent", content: customGreeting || res.greeting }]);
     } catch (err: any) {
       setError(err.message || "Failed to initialize demo. Please try again.");
     } finally {
@@ -407,10 +468,19 @@ function InteractiveDemo() {
     }
   };
 
-  // Initialize default demo on mount ( KaliGanAI SaaS teammate )
+  // Initialize default demo on mount (Maya - SaaS Sales Teammate)
   useEffect(() => {
-    startDemo({ vertical: "saas" });
+    startDemo({ vertical: "saas" }, AI_EMPLOYEES[0].greeting);
   }, []);
+
+  const handleSelectEmployee = (emp: typeof AI_EMPLOYEES[0]) => {
+    disconnect();
+    setSelectedEmployee(emp);
+    setUrl("");
+    setMode("A");
+    setCapturedLead(null);
+    startDemo({ vertical: emp.vertical }, emp.greeting);
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -481,352 +551,384 @@ function InteractiveDemo() {
     setUrl("");
     setMode("A");
     setCapturedLead(null);
-    startDemo({ vertical: "saas" });
+    startDemo({ vertical: selectedEmployee.vertical }, selectedEmployee.greeting);
   };
 
   return (
     <div className="relative w-full max-w-[460px] mx-auto">
-      {/* Web browser mockup container */}
-      <div className="bg-slate-950 border border-slate-800 rounded-3xl h-[470px] w-full relative overflow-hidden shadow-lift flex flex-col">
+      {/* Web browser mockup container - LIGHT THEME */}
+      <div className="bg-white border border-slate-200 rounded-3xl h-[470px] w-full relative overflow-hidden shadow-lift flex flex-col">
         
         {/* Browser Top Bar */}
-        <div className="bg-slate-900 px-4 py-2.5 border-b border-slate-800/80 flex items-center gap-3 shrink-0 select-none">
+        <div className="bg-slate-50 px-4 py-2 flex items-center gap-3 shrink-0 select-none border-b border-slate-200/60">
           <div className="flex gap-1.5 shrink-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+            <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
           </div>
-          <div className="bg-slate-950/80 border border-slate-800 rounded-lg px-3 py-0.5 text-[10px] text-slate-500 font-mono w-full max-w-[200px] mx-auto text-center truncate">
-            {url ? url.replace(/https?:\/\/(www\.)?/, '') : "yourwebsite.com"}
-          </div>
-        </div>
-
-        {/* Browser Viewport mock in background (faint dashboard visual) */}
-        <div className="absolute inset-0 top-10 p-5 flex flex-col justify-between pointer-events-none opacity-[0.06] select-none z-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-md bg-emerald-600" />
-              <span className="h-3.5 w-16 bg-slate-700 rounded" />
-            </div>
-            <div className="flex gap-2">
-              <span className="h-2 w-8 bg-slate-800 rounded" />
-              <span className="h-2 w-8 bg-slate-800 rounded" />
-            </div>
-          </div>
-          <div className="my-auto space-y-3.5 max-w-[260px]">
-            <div className="h-5 w-40 bg-slate-600 rounded-lg" />
-            <div className="h-3 w-52 bg-slate-800 rounded" />
-            <div className="h-3 w-44 bg-slate-800 rounded" />
-            <div className="flex gap-2 pt-1">
-              <span className="h-7 w-20 bg-emerald-700 rounded-lg" />
-              <span className="h-7 w-16 bg-slate-800 rounded-lg" />
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="border border-slate-800 bg-slate-900 rounded-xl p-3.5 h-12" />
-            <div className="border border-slate-800 bg-slate-900 rounded-xl p-3.5 h-12" />
-            <div className="border border-slate-800 bg-slate-900 rounded-xl p-3.5 h-12" />
+          <div className="bg-white border border-slate-200/80 rounded-lg px-3 py-0.5 text-[9.5px] text-slate-400 font-mono w-full max-w-[200px] mx-auto text-center truncate">
+            {url ? url.replace(/https?:\/\/(www\.)?/, '') : `${selectedEmployee.id}-website.com`}
           </div>
         </div>
 
-        {/* Floating Chat Panel overlay */}
-        <div
-          className={`absolute bottom-16 right-4 w-[285px] sm:w-[305px] h-[345px] rounded-2xl border border-line bg-surface shadow-lift flex flex-col overflow-hidden z-20 origin-bottom-right transition-all duration-300 ${
-            isOpen
-              ? "scale-100 opacity-100 translate-y-0"
-              : "scale-90 opacity-0 pointer-events-none translate-y-4"
-          }`}
-        >
-          {/* Chat Panel Header */}
-          <div className="bg-gradient-to-r from-emerald-700 to-emerald-800 px-3.5 py-2.5 text-white flex items-center justify-between shrink-0 shadow-sm">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 bg-success rounded-full animate-pulse border border-white" />
-              <div className="text-left">
-                <div className="text-[11.5px] font-bold font-display leading-tight">KaliGanAI Sales Agent</div>
-                <div className="text-[9px] text-emerald-100/90 leading-none">Online & ready to qualify</div>
-              </div>
+        {/* Flex Split Content Area */}
+        <div className="flex-1 flex overflow-hidden">
+          
+          {/* Left Sidebar AI Employee Directory */}
+          <div className="w-[145px] sm:w-[155px] bg-slate-50 border-r border-slate-200/60 p-2.5 flex flex-col gap-2 shrink-0 select-none text-left">
+            <div className="text-[8.5px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">
+              AI Employees
             </div>
-            <div className="flex items-center gap-2">
-              {mode === "A" ? (
-                <button
-                  onClick={() => setMode("B")}
-                  className="text-[9.5px] font-bold bg-white/10 hover:bg-white/20 border border-white/25 px-2.5 py-0.5 rounded-full transition-colors flex items-center gap-0.5 text-white focus:outline-none"
-                >
-                  🔗 Scan Site
-                </button>
-              ) : (
-                <button
-                  onClick={() => setMode("A")}
-                  className="text-[9.5px] font-bold bg-white/10 hover:bg-white/20 border border-white/25 px-2.5 py-0.5 rounded-full transition-colors flex items-center gap-0.5 text-white focus:outline-none"
-                >
-                  💬 Back
-                </button>
-              )}
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-white hover:text-emerald-100 transition-colors focus:outline-none"
-                aria-label="Minimize chat"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Website Scan Overlay inside Widget Panel */}
-          {mode === "B" && !ingesting && (
-            <div className="flex-1 flex flex-col justify-center p-5 text-center bg-surface-2/30">
-              <div className="space-y-3">
-                <span className="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-700 grid place-items-center mx-auto shadow-soft">
-                  <I.Code width={18} height={18} />
-                </span>
-                <h4 className="font-display font-bold text-[13px] text-ink">Train AI on your live site</h4>
-                <p className="text-ink-muted text-[10.5px] leading-relaxed max-w-[200px] mx-auto">
-                  Paste your URL. Our crawler will index your home page to ground this chat widget.
-                </p>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (!url.trim()) return;
-                    setMode("A");
-                    startDemo({ url: url.trim() });
-                  }}
-                  className="space-y-2 max-w-[190px] mx-auto pt-1"
-                >
-                  <input
-                    required
-                    type="url"
-                    placeholder="https://yourwebsite.com"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    className="input text-center text-xs !py-1.5 bg-white"
-                  />
+            <div className="flex flex-col gap-2">
+              {AI_EMPLOYEES.map((emp) => {
+                const isSelected = selectedEmployee.id === emp.id;
+                return (
                   <button
-                    type="submit"
-                    className="btn btn-primary w-full !py-1.5 text-[10.5px] font-bold"
+                    key={emp.id}
+                    onClick={() => handleSelectEmployee(emp)}
+                    className={`flex items-center gap-2 p-1.5 rounded-xl border text-left transition-all duration-200 hover:scale-[1.02] focus:outline-none ${
+                      isSelected
+                        ? "bg-white border-emerald-500 shadow-sm ring-1 ring-emerald-500/10"
+                        : "bg-slate-50 border-slate-100 hover:border-slate-200"
+                    }`}
                   >
-                    Scan & Build Teammate
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Crawler / Ingestion Loader screen */}
-          {ingesting && (
-            <div className="flex-1 flex flex-col justify-center items-center p-5 text-center bg-surface-2/30">
-              <div className="space-y-3">
-                <span className="w-9 h-9 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin flex items-center justify-center mx-auto" />
-                <h4 className="font-display font-bold text-[12px] text-ink">Ingesting & Grounding...</h4>
-                <p className="text-ink-muted text-[9.5px] leading-relaxed max-w-[180px] mx-auto">
-                  {url ? `Crawling homepage details...` : "Initializing Sales Teammate..."}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Active Voice Call Overlay screen */}
-          {(connectionState === ConnectionState.CONNECTED || connectionState === ConnectionState.CONNECTING) && (
-            <div className="flex-1 flex flex-col justify-between bg-slate-950 text-white p-3.5 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-emerald-950/20 -z-10" />
-              
-              <div className="text-center shrink-0">
-                <div className="text-[7.5px] uppercase tracking-[0.15em] text-slate-400 font-bold leading-none">Web Voice Demo</div>
-                <div className="text-[11px] font-bold text-white mt-1 leading-none">KaliGanAI Sales Agent</div>
-                <div className="text-[9px] text-emerald-400 mt-1 flex items-center justify-center gap-1 leading-none">
-                  <span className="w-1 h-1 rounded-full bg-success animate-pulse" />
-                  <span className="font-semibold text-slate-300">
-                    {connectionState === ConnectionState.CONNECTING ? "Connecting..." : "Active voice call"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="relative w-18 h-18 mx-auto my-1.5 grid place-items-center bg-emerald-950/40 rounded-full border border-emerald-800/40 shrink-0">
-                <Orb
-                  className="w-14 h-14"
-                  voiceLevel={connectionState === ConnectionState.CONNECTED ? orbVoiceLevel : undefined}
-                  enableVoiceControl={false}
-                />
-              </div>
-
-              <div className="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-800/80 rounded-xl p-2.5 space-y-2 text-left text-[10px] leading-relaxed scrollbar-none mb-2.5 max-h-[85px]">
-                {voiceError ? (
-                  <div className="text-red-400 text-center py-2">⚠ {voiceError}</div>
-                ) : voiceMessages.length === 0 ? (
-                  <div className="text-slate-400 text-center py-2 text-[9.5px]">Connecting... Try speaking once visualizer moves.</div>
-                ) : (
-                  voiceMessages.map((line, i) => (
-                    <div key={i} className="space-y-0.5">
-                      <div className={`font-bold uppercase text-[7.5px] tracking-wider ${
-                        line.role === 'model' ? "text-emerald-400" : "text-slate-400"
-                      }`}>
-                        {line.role === 'model' ? "AI Agent" : "You"}
-                      </div>
-                      <div className="text-slate-200">{line.content}</div>
+                    <span className={`w-7 h-7 rounded-lg bg-gradient-to-br ${emp.color} text-white font-bold flex items-center justify-center text-[10.5px] shrink-0 relative shadow-sm`}>
+                      {emp.name[0]}
+                      <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-success border border-white pulse-dot" />
+                    </span>
+                    <div className="truncate">
+                      <div className="text-[10px] font-bold text-slate-800 leading-tight truncate">{emp.name}</div>
+                      <div className="text-[7.5px] text-slate-400 leading-none truncate mt-0.5">{emp.role.split(" & ")[0]}</div>
                     </div>
-                  ))
-                )}
-              </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-              <div className="pb-0.5 shrink-0 flex justify-center">
-                <button
-                  onClick={handleVoiceToggle}
-                  className="w-8.5 h-8.5 rounded-full bg-red-600 hover:bg-red-500 text-white flex items-center justify-center shadow-lift transition-all hover:scale-105"
-                  aria-label="Hang up call"
-                >
-                  <svg className="w-4 h-4 transform rotate-[135deg]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
-                  </svg>
-                </button>
+          {/* Right Main Web Viewport */}
+          <div className="flex-1 bg-white relative overflow-hidden flex flex-col justify-end">
+            
+            {/* Viewport Grid Lines */}
+            <div 
+              className="absolute inset-0 opacity-[0.22] pointer-events-none" 
+              style={{
+                backgroundImage: "linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)",
+                backgroundSize: "16px 16px"
+              }}
+            />
+            
+            {/* Mock website content inside viewport (extremely faint) */}
+            <div className="absolute inset-0 p-4 flex flex-col justify-between pointer-events-none opacity-[0.06] select-none z-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded bg-emerald-600" />
+                  <span className="h-2.5 w-12 bg-slate-700 rounded" />
+                </div>
+              </div>
+              <div className="my-auto space-y-2 max-w-[150px] pl-1">
+                <div className="h-3 w-28 bg-slate-600 rounded" />
+                <div className="h-2 w-36 bg-slate-800 rounded" />
+                <div className="h-2 w-32 bg-slate-800 rounded" />
               </div>
             </div>
-          )}
 
-          {/* Active Chat Conversation Log */}
-          {demoId && !ingesting && mode === "A" && connectionState === ConnectionState.DISCONNECTED && (
-            <div className="flex-1 flex flex-col overflow-hidden bg-surface">
-              {/* Context subheader */}
-              <div className="bg-surface-2/80 px-3 py-1.5 border-b border-line flex items-center justify-between text-[9.5px] shrink-0 select-none">
-                <div className="flex items-center gap-1 text-ink-muted">
-                  <span className="w-1.5 h-1.5 bg-success rounded-full pulse-dot" />
-                  <span className="truncate max-w-[120px]">
-                    {url ? `Grounded: ${url.replace(/https?:\/\/(www\.)?/, '').split('/')[0]}` : "General Sandbox (SaaS)"}
-                  </span>
+            {/* Floating Chat Panel overlay */}
+            <div
+              className={`absolute bottom-11 right-3.5 w-[225px] sm:w-[245px] h-[310px] rounded-2xl border border-line bg-surface shadow-lift flex flex-col overflow-hidden z-20 origin-bottom-right transition-all duration-300 ${
+                isOpen
+                  ? "scale-100 opacity-100 translate-y-0"
+                  : "scale-90 opacity-0 pointer-events-none translate-y-4"
+              }`}
+            >
+              {/* Chat Panel Header */}
+              <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-3 py-2 text-white flex items-center justify-between shrink-0 shadow-sm">
+                <div className="flex items-center gap-1.5 text-left">
+                  <span className="w-2 h-2 bg-success rounded-full animate-pulse border border-white" />
+                  <div>
+                    <div className="text-[10px] font-bold font-display leading-tight">{selectedEmployee.name} — AI Teammate</div>
+                    <div className="text-[8px] text-emerald-100/90 leading-none">Online & ready</div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  {mode === "A" ? (
+                    <button
+                      onClick={() => setMode("B")}
+                      className="text-[8.5px] font-bold bg-white/10 hover:bg-white/20 border border-white/25 px-2 py-0.5 rounded-full transition-colors flex items-center gap-0.5 text-white focus:outline-none"
+                    >
+                      🔗 Scan
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setMode("A")}
+                      className="text-[8.5px] font-bold bg-white/10 hover:bg-white/20 border border-white/25 px-2 py-0.5 rounded-full transition-colors flex items-center gap-0.5 text-white focus:outline-none"
+                    >
+                      💬 Back
+                    </button>
+                  )}
                   <button
-                    onClick={handleVoiceToggle}
-                    className="font-bold px-2 py-0.5 rounded-full text-[9px] text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-0.5 focus:outline-none"
+                    onClick={() => setIsOpen(false)}
+                    className="text-white hover:text-emerald-100 transition-colors focus:outline-none"
+                    aria-label="Minimize chat"
                   >
-                    <I.Mic width={8} height={8} fill="#fff" />
-                    Call AI
-                  </button>
-                  <button
-                    onClick={handleReset}
-                    className="text-emerald-700 hover:underline font-bold"
-                  >
-                    Reset
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
                   </button>
                 </div>
               </div>
 
-              {/* Scrollable messages container */}
-              <div className="flex-1 p-3 overflow-y-auto space-y-3 scrollbar-none flex flex-col text-left">
-                {error && (
-                  <div className="p-2 bg-red-50 border border-red-200 text-red-700 text-[10px] rounded-lg mb-2">
-                    ⚠ {error}
-                  </div>
-                )}
-                
-                {messages.map((m, idx) => {
-                  const isAgent = m.role === "agent";
-                  return (
-                    <div key={idx} className={`max-w-[85%] flex flex-col ${isAgent ? "items-start" : "items-end ml-auto"}`}>
-                      <div className="text-[8px] text-ink-muted mb-0.5 uppercase tracking-wider font-bold">
-                        {isAgent ? "Teammate" : "You"}
-                      </div>
-                      <div
-                        className={`px-3 py-1.5 rounded-2xl text-[11px] leading-relaxed inline-block border ${
-                          isAgent
-                            ? "bg-emerald-50 border-mint-300 rounded-tl-sm text-ink"
-                            : "bg-surface-2 border-line rounded-tr-sm text-ink"
-                        }`}
+              {/* Website Scan Overlay inside Widget Panel */}
+              {mode === "B" && !ingesting && (
+                <div className="flex-1 flex flex-col justify-center p-4 text-center bg-surface-2/30">
+                  <div className="space-y-2">
+                    <span className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center mx-auto shadow-soft">
+                      <I.Code width={14} height={14} />
+                    </span>
+                    <h4 className="font-display font-bold text-[11px] text-ink">Train AI on your live site</h4>
+                    <p className="text-ink-muted text-[9px] leading-relaxed max-w-[170px] mx-auto">
+                      Paste your URL. Our crawler will index your home page to ground this chat widget.
+                    </p>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!url.trim()) return;
+                        setMode("A");
+                        startDemo({ url: url.trim() });
+                      }}
+                      className="space-y-1.5 max-w-[160px] mx-auto pt-1"
+                    >
+                      <input
+                        required
+                        type="url"
+                        placeholder="https://yourwebsite.com"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        className="input text-center text-[10px] !py-1 bg-white"
+                      />
+                      <button
+                        type="submit"
+                        className="btn btn-primary w-full !py-1 text-[9.5px] font-bold"
                       >
-                        {m.content}
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {loadingReply && (
-                  <div className="max-w-[85%] flex flex-col items-start">
-                    <div className="text-[8px] text-ink-muted mb-0.5 uppercase font-bold">Teammate</div>
-                    <div className="px-2.5 py-1.5 rounded-2xl bg-emerald-50 border border-mint-300 rounded-tl-sm flex items-center gap-0.5">
-                      <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
-                      <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
-                      <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
-                    </div>
+                        Scan & Build Teammate
+                      </button>
+                    </form>
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Lead Captured Alert Banner */}
-                {capturedLead && (
-                  <div className="p-2 bg-emerald-50 border border-mint-300 rounded-xl flex items-start gap-2 animate-bounce-once mt-1 select-none">
-                    <span className="text-[11px]">🎯</span>
-                    <div className="text-left">
-                      <b className="text-[9.5px] text-emerald-800 font-bold block">Autopilot: Lead Captured!</b>
-                      <span className="text-[9px] text-ink-muted leading-tight block">
-                        AI identified buying intent ({capturedLead.score}) and qualified the contact.
+              {/* Crawler / Ingestion Loader screen */}
+              {ingesting && (
+                <div className="flex-1 flex flex-col justify-center items-center p-4 text-center bg-surface-2/30">
+                  <div className="space-y-2">
+                    <span className="w-7 h-7 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin flex items-center justify-center mx-auto" />
+                    <h4 className="font-display font-bold text-[11px] text-ink">Ingesting & Grounding...</h4>
+                    <p className="text-ink-muted text-[8.5px] leading-relaxed max-w-[160px] mx-auto">
+                      {url ? `Crawling homepage...` : "Initializing AI Teammate..."}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Active Voice Call Overlay screen */}
+              {(connectionState === ConnectionState.CONNECTED || connectionState === ConnectionState.CONNECTING) && (
+                <div className="flex-1 flex flex-col justify-between bg-slate-950 text-white p-3 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-emerald-950/20 -z-10" />
+                  
+                  <div className="text-center shrink-0">
+                    <div className="text-[6.5px] uppercase tracking-[0.15em] text-slate-400 font-bold leading-none">Web Voice Demo</div>
+                    <div className="text-[10px] font-bold text-white mt-1 leading-none">{selectedEmployee.name} — AI Teammate</div>
+                    <div className="text-[8px] text-emerald-400 mt-1 flex items-center justify-center gap-1 leading-none">
+                      <span className="w-1 h-1 rounded-full bg-success animate-pulse" />
+                      <span className="font-semibold text-slate-300">
+                        {connectionState === ConnectionState.CONNECTING ? "Connecting..." : "Active voice call"}
                       </span>
                     </div>
                   </div>
-                )}
 
-                {/* In-chat suggestion chips (Only show under first message greeting) */}
-                {messages.length === 1 && !loadingReply && (
-                  <div className="pt-2 flex flex-col gap-1.5 max-w-[220px]">
-                    <div className="text-[8.5px] font-bold text-ink-muted uppercase tracking-wider mb-0.5">Suggested Questions:</div>
-                    {[
-                      { q: "💬 How does it capture leads?", text: "How does lead capture work?" },
-                      { q: "📞 Can we make voice calls?", text: "Can we use voice calls?" },
-                      { q: "💰 What are the pricing plans?", text: "What is the pricing?" }
-                    ].map((s) => (
-                      <button
-                        key={s.q}
-                        onClick={() => handleSendSuggestion(s.q)}
-                        className="text-left text-[10px] font-semibold text-emerald-800 bg-emerald-50/50 hover:bg-emerald-50 border border-mint-200 hover:border-mint-300 rounded-xl px-2.5 py-1.5 transition-all hover:scale-[1.02] duration-200 focus:outline-none"
-                      >
-                        {s.q}
-                      </button>
-                    ))}
+                  <div className="relative w-14 h-14 mx-auto my-1 grid place-items-center bg-emerald-950/40 rounded-full border border-emerald-800/40 shrink-0">
+                    <Orb
+                      className="w-10 h-10"
+                      voiceLevel={connectionState === ConnectionState.CONNECTED ? orbVoiceLevel : undefined}
+                      enableVoiceControl={false}
+                    />
                   </div>
-                )}
-              </div>
 
-              {/* Chat Panel Footer Input Form */}
-              <form onSubmit={handleSendMessage} className="p-2 border-t border-line flex gap-2 bg-surface-2 shrink-0 select-none">
-                <input
-                  required
-                  placeholder="Type a message..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  disabled={loadingReply}
-                  className="input !bg-white text-[11px] !py-1.5 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  disabled={loadingReply}
-                  className="btn btn-primary !py-1.5 text-[10px] font-bold px-2.5"
-                >
-                  Send
-                </button>
-              </form>
+                  <div className="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-800/80 rounded-xl p-2 space-y-1.5 text-left text-[9px] leading-relaxed scrollbar-none mb-2 max-h-[75px]">
+                    {voiceError ? (
+                      <div className="text-red-400 text-center py-1">⚠ {voiceError}</div>
+                    ) : voiceMessages.length === 0 ? (
+                      <div className="text-slate-400 text-center py-1 text-[8.5px]">Connecting... Speak once visualizer moves.</div>
+                    ) : (
+                      voiceMessages.map((line, i) => (
+                        <div key={i} className="space-y-0.5">
+                          <div className={`font-bold uppercase text-[7px] tracking-wider ${
+                            line.role === 'model' ? "text-emerald-400" : "text-slate-400"
+                          }`}>
+                            {line.role === 'model' ? "AI Agent" : "You"}
+                          </div>
+                          <div className="text-slate-200">{line.content}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="pb-0.5 shrink-0 flex justify-center">
+                    <button
+                      onClick={handleVoiceToggle}
+                      className="w-7 h-7 rounded-full bg-red-600 hover:bg-red-500 text-white flex items-center justify-center shadow-lift transition-all hover:scale-105"
+                      aria-label="Hang up call"
+                    >
+                      <svg className="w-3.5 h-3.5 transform rotate-[135deg]" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Active Chat Conversation Log */}
+              {demoId && !ingesting && mode === "A" && connectionState === ConnectionState.DISCONNECTED && (
+                <div className="flex-1 flex flex-col overflow-hidden bg-surface">
+                  {/* Context subheader */}
+                  <div className="bg-surface-2/80 px-2.5 py-1 border-b border-line flex items-center justify-between text-[8.5px] shrink-0 select-none">
+                    <div className="flex items-center gap-1 text-ink-muted">
+                      <span className="w-1 h-1 bg-success rounded-full pulse-dot" />
+                      <span className="truncate max-w-[100px]">
+                        {url ? `Grounded: ${url.replace(/https?:\/\/(www\.)?/, '').split('/')[0]}` : `Active: ${selectedEmployee.role}`}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={handleVoiceToggle}
+                        className="font-bold px-1.5 py-0.5 rounded-full text-[8px] text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-0.5 focus:outline-none"
+                      >
+                        <I.Mic width={7} height={7} fill="#fff" />
+                        Call
+                      </button>
+                      <button
+                        onClick={handleReset}
+                        className="text-emerald-700 hover:underline font-bold"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Scrollable messages container */}
+                  <div className="flex-1 p-2.5 overflow-y-auto space-y-2.5 scrollbar-none flex flex-col text-left">
+                    {error && (
+                      <div className="p-2.5 bg-red-50 border border-red-200 text-red-700 text-[9px] rounded-lg mb-1.5">
+                        ⚠ {error}
+                      </div>
+                    )}
+                    
+                    {messages.map((m, idx) => {
+                      const isAgent = m.role === "agent";
+                      return (
+                        <div key={idx} className={`max-w-[85%] flex flex-col ${isAgent ? "items-start" : "items-end ml-auto"}`}>
+                          <div className="text-[7.5px] text-ink-muted mb-0.5 uppercase tracking-wider font-bold">
+                            {isAgent ? selectedEmployee.name : "You"}
+                          </div>
+                          <div
+                            className={`px-2.5 py-1.5 rounded-xl text-[10px] leading-relaxed inline-block border ${
+                              isAgent
+                                ? "bg-emerald-50 border-mint-300 rounded-tl-none text-ink"
+                                : "bg-surface-2 border-line rounded-tr-none text-ink"
+                            }`}
+                          >
+                            {m.content}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {loadingReply && (
+                      <div className="max-w-[85%] flex flex-col items-start">
+                        <div className="text-[7.5px] text-ink-muted mb-0.5 uppercase font-bold">{selectedEmployee.name}</div>
+                        <div className="px-2 py-1.5 rounded-xl bg-emerald-50 border border-mint-300 rounded-tl-none flex items-center gap-0.5">
+                          <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
+                          <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                          <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Lead Captured Alert Banner */}
+                    {capturedLead && (
+                      <div className="p-2 bg-emerald-50 border border-mint-300 rounded-xl flex items-start gap-1.5 animate-bounce-once mt-1 select-none text-left">
+                        <span className="text-[10px]">🎯</span>
+                        <div className="text-left">
+                          <b className="text-[9px] text-emerald-800 font-bold block">Autopilot: Lead Captured!</b>
+                          <span className="text-[8.5px] text-ink-muted leading-tight block">
+                            AI identified buying intent ({capturedLead.score}) and qualified the contact.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* In-chat suggestion chips (Only show under first message greeting) */}
+                    {messages.length === 1 && !loadingReply && (
+                      <div className="pt-1.5 flex flex-col gap-1 max-w-[210px]">
+                        <div className="text-[8px] font-bold text-ink-muted uppercase tracking-wider mb-0.5">Suggested Questions:</div>
+                        {selectedEmployee.suggestions.map((s) => (
+                          <button
+                            key={s.q}
+                            onClick={() => handleSendSuggestion(s.q)}
+                            className="text-left text-[9.5px] font-semibold text-emerald-800 bg-emerald-50/50 hover:bg-emerald-50 border border-mint-200 hover:border-mint-300 rounded-xl px-2 py-1 transition-all hover:scale-[1.02] duration-200 focus:outline-none"
+                          >
+                            {s.q}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Chat Panel Footer Input Form */}
+                  <form onSubmit={handleSendMessage} className="p-2 border-t border-line flex gap-1.5 bg-surface-2 shrink-0 select-none">
+                    <input
+                      required
+                      placeholder="Type a message..."
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      disabled={loadingReply}
+                      className="input !bg-white text-[10px] !py-1 focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      disabled={loadingReply}
+                      className="btn btn-primary !py-1 text-[9px] font-bold px-2"
+                    >
+                      Send
+                    </button>
+                  </form>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Circular Floating Launcher Button */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="absolute bottom-5 right-5 w-12 h-12 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lift cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 z-30 focus:outline-none"
-          aria-label="Toggle chat widget"
-        >
-          {isOpen ? (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          )}
-        </button>
+            {/* Circular Floating Launcher Button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lift cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200 z-30 focus:outline-none"
+              aria-label="Toggle chat widget"
+            >
+              {isOpen ? (
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              ) : (
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              )}
+            </button>
+          </div>
+
+        </div>
       </div>
     </div>
   );
-}
-/* =============================== HOME ============================= */
+}/* =============================== HOME ============================= */
 export function Home() {
   return (
     <main className="relative overflow-hidden bg-gradient-to-br from-canvas via-[#EDF5DE] to-[#E5EED1]">
