@@ -242,7 +242,7 @@ export function MarketingShell() {
           <nav className="hidden md:flex items-center gap-6">
             <NavLink to="/features" className={link}>Product</NavLink>
             <NavLink to="/pricing" className={link}>Pricing</NavLink>
-            <NavLink to="/compare/chatgpt" className={link}>Compare</NavLink>
+            <NavLink to="/compare/sintra" className={link}>Compare</NavLink>
             <NavLink to="/blog" className={link}>Blog</NavLink>
           </nav>
           <div className="ml-auto flex items-center gap-3">
@@ -270,7 +270,7 @@ export function MarketingShell() {
             <nav className="py-2 flex flex-col">
               <NavLink to="/features" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Product</NavLink>
               <NavLink to="/pricing" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Pricing</NavLink>
-              <NavLink to="/compare/chatgpt" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Compare</NavLink>
+              <NavLink to="/compare/sintra" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Compare</NavLink>
               <NavLink to="/blog" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Blog</NavLink>
               <div className="p-4 flex flex-col gap-3">
                 <Link to="/login" className="text-center font-semibold py-2 text-sm text-ink hover:text-emerald-700" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
@@ -288,7 +288,7 @@ export function MarketingShell() {
             <p className="text-ink-muted text-[13px] leading-relaxed max-w-[230px]">The AI employee that turns website visitors into qualified leads — over chat and voice.</p>
           </div>
           {[["Product", ["Features", "/features"], ["Pricing", "/pricing"], ["Log in", "/login"]],
-            ["Compare", ["vs Wrappers", "/compare/chatgpt"], ["vs Voice APIs", "/compare/vapi"], ["vs Legacy Chatbots", "/compare/generic"]],
+            ["Compare", ["vs AI Marketplaces", "/compare/sintra"], ["vs Voice APIs", "/compare/vapi"], ["vs Legacy Chatbots", "/compare/generic"]],
             ["Company", ["About", "/about"], ["Contact", "/contact"]],
             ["Legal", ["Privacy", "/"], ["Terms", "/"]]].map((col) => (
             <div key={col[0] as string}>
@@ -315,6 +315,7 @@ const AI_EMPLOYEES = [
     role: "Sales & Growth",
     desc: "Grounded lead capture assistant.",
     vertical: "saas",
+    avatar: "/maya_astronaut.png",
     color: "from-emerald-600 to-emerald-700",
     bgColor: "bg-emerald-50",
     borderColor: "border-emerald-200",
@@ -334,6 +335,7 @@ const AI_EMPLOYEES = [
     role: "Local Services",
     desc: "24/7 service & faq coordinator.",
     vertical: "services",
+    avatar: "/dexter_astronaut.png",
     color: "from-blue-600 to-blue-700",
     bgColor: "bg-blue-50",
     borderColor: "border-blue-200",
@@ -353,6 +355,7 @@ const AI_EMPLOYEES = [
     role: "Marketing Agency",
     desc: "Prospect qualification expert.",
     vertical: "agency",
+    avatar: "/milli_astronaut.png",
     color: "from-violet-600 to-violet-700",
     bgColor: "bg-violet-50",
     borderColor: "border-violet-200",
@@ -592,8 +595,8 @@ function InteractiveDemo() {
                         : "bg-slate-50 border-slate-100 hover:border-slate-200"
                     }`}
                   >
-                    <span className={`w-7 h-7 rounded-lg bg-gradient-to-br ${emp.color} text-white font-bold flex items-center justify-center text-[10.5px] shrink-0 relative shadow-sm`}>
-                      {emp.name[0]}
+                    <span className={`w-7 h-7 rounded-lg bg-gradient-to-br ${emp.color} text-white font-bold flex items-center justify-center text-[10.5px] shrink-0 relative shadow-sm overflow-hidden`}>
+                      <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
                       <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-success border border-white pulse-dot" />
                     </span>
                     <div className="truncate">
@@ -643,8 +646,10 @@ function InteractiveDemo() {
             >
               {/* Chat Panel Header */}
               <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-3 py-2 text-white flex items-center justify-between shrink-0 shadow-sm">
-                <div className="flex items-center gap-1.5 text-left">
-                  <span className="w-2 h-2 bg-success rounded-full animate-pulse border border-white" />
+                <div className="flex items-center gap-2 text-left">
+                  <div className="w-6 h-6 rounded-full bg-white/20 overflow-hidden relative border border-white/10 shrink-0">
+                    <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                  </div>
                   <div>
                     <div className="text-[10px] font-bold font-display leading-tight">{selectedEmployee.name} — AI Teammate</div>
                     <div className="text-[8px] text-emerald-100/90 leading-none">Online & ready</div>
@@ -826,30 +831,46 @@ function InteractiveDemo() {
                     {messages.map((m, idx) => {
                       const isAgent = m.role === "agent";
                       return (
-                        <div key={idx} className={`max-w-[85%] flex flex-col ${isAgent ? "items-start" : "items-end ml-auto"}`}>
-                          <div className="text-[7.5px] text-ink-muted mb-0.5 uppercase tracking-wider font-bold">
-                            {isAgent ? selectedEmployee.name : "You"}
-                          </div>
-                          <div
-                            className={`px-2.5 py-1.5 rounded-xl text-[10px] leading-relaxed inline-block border ${
-                              isAgent
-                                ? "bg-emerald-50 border-mint-300 rounded-tl-none text-ink"
-                                : "bg-surface-2 border-line rounded-tr-none text-ink"
-                            }`}
-                          >
-                            {m.content}
+                        <div key={idx} className={`max-w-[90%] flex gap-2 ${isAgent ? "items-start text-left" : "items-start ml-auto flex-row-reverse text-right"}`}>
+                          {isAgent ? (
+                            <div className="w-5.5 h-5.5 rounded-full overflow-hidden bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 shrink-0 mt-1 shadow-sm">
+                              <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-5.5 h-5.5 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 mt-1 flex items-center justify-center text-[9px] font-bold text-slate-500 shadow-sm font-display">
+                              You
+                            </div>
+                          )}
+                          <div className="flex flex-col min-w-0">
+                            <div className="text-[7.5px] text-ink-muted mb-0.5 uppercase tracking-wider font-bold">
+                              {isAgent ? selectedEmployee.name : "You"}
+                            </div>
+                            <div
+                              className={`px-2.5 py-1.5 rounded-xl text-[10px] leading-relaxed inline-block border ${
+                                isAgent
+                                  ? "bg-emerald-50 border-mint-300 rounded-tl-none text-ink text-left"
+                                  : "bg-surface-2 border-line rounded-tr-none text-ink text-left"
+                              }`}
+                            >
+                              {m.content}
+                            </div>
                           </div>
                         </div>
                       );
                     })}
 
                     {loadingReply && (
-                      <div className="max-w-[85%] flex flex-col items-start">
-                        <div className="text-[7.5px] text-ink-muted mb-0.5 uppercase font-bold">{selectedEmployee.name}</div>
-                        <div className="px-2 py-1.5 rounded-xl bg-emerald-50 border border-mint-300 rounded-tl-none flex items-center gap-0.5">
-                          <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
-                          <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
-                          <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
+                      <div className="max-w-[90%] flex gap-2 items-start text-left">
+                        <div className="w-5.5 h-5.5 rounded-full overflow-hidden bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 shrink-0 mt-1 shadow-sm">
+                          <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex flex-col">
+                          <div className="text-[7.5px] text-ink-muted mb-0.5 uppercase font-bold">{selectedEmployee.name}</div>
+                          <div className="px-2 py-1.5 rounded-xl bg-emerald-50 border border-mint-300 rounded-tl-none flex items-center gap-0.5">
+                            <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
+                            <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                            <span className="w-1 h-1 bg-emerald-700 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
+                          </div>
                         </div>
                       </div>
                     )}
@@ -928,89 +949,208 @@ function InteractiveDemo() {
       </div>
     </div>
   );
-}/* =============================== HOME ============================= */
+}
+
 export function Home() {
   return (
     <main className="relative overflow-hidden bg-gradient-to-br from-canvas via-[#EDF5DE] to-[#E5EED1]">
-      {/* HERO */}
-      <section className="relative pt-16 md:pt-20 pb-16">
-        <Glow className="-top-44 right-[-120px] opacity-60" variant={1} />
-        <Glow className="top-1/3 left-[-200px] opacity-40" variant={2} />
+      {/* HERO SECTION */}
+      <section className="relative pt-20 md:pt-28 pb-16 text-center">
+        <Glow className="-top-44 left-1/2 -translate-x-1/2 opacity-60" variant={1} />
         <Dots className="inset-0 opacity-70" />
-        <div className="max-w-6xl mx-auto px-6 md:px-8 grid md:grid-cols-[1.05fr_.95fr] gap-12 items-center relative z-10">
-          <div>
-            <div className="fadeup"><Eyebrow>AI employee · chat + voice</Eyebrow></div>
-            <h1 className="font-display text-[42px] md:text-[58px] font-bold leading-[1.03] mt-5 fadeup text-ink" style={{ animationDelay: ".05s" }}>
-              Your website's <span className="text-emerald-700 font-extrabold relative inline-block">hardest-working employee.<span className="absolute bottom-1 left-0 w-full h-[6px] bg-teal-200/60 -z-10 rounded-full" /></span>
-            </h1>
-            <p className="text-ink-muted text-[17px] leading-relaxed mt-5 max-w-lg fadeup" style={{ animationDelay: ".1s" }}>
-              An AI that chats, talks, and turns visitors into qualified leads — grounded in your business, live in minutes.
-            </p>
-            <div className="flex flex-wrap gap-3 mt-8 fadeup" style={{ animationDelay: ".15s" }}>
-              <Link to="/signup" className="btn btn-primary !px-8 !py-3.5 text-[15.5px] shadow-lift hover:translate-y-[-1px] transition-transform duration-200">Start free <I.ArrowRight width={16} height={16} /></Link>
-              <a href="#how" className="btn btn-ghost !px-8 !py-3.5 text-[15.5px] hover:translate-y-[-1px] transition-transform duration-200">See how it works</a>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-7 text-[13px] text-ink-muted/90 fadeup" style={{ animationDelay: ".2s" }}>
-              {["No code — one snippet", "Live in 5 minutes", "Cancel anytime"].map((t) => (
-                <span key={t} className="inline-flex items-center gap-1.5 font-medium"><I.Check width={14} height={14} className="text-success" strokeWidth={2.5} />{t}</span>
-              ))}
-            </div>
+        <div className="max-w-4xl mx-auto px-6 relative z-10">
+          <div className="fadeup inline-flex justify-center"><Eyebrow>Introducing AI Employees</Eyebrow></div>
+          <h1 className="font-display text-[46px] md:text-[68px] font-bold leading-[1.03] mt-5 fadeup text-ink">
+            Hire AI Employees That <br className="hidden md:inline" />
+            <span className="text-emerald-700 font-extrabold relative inline-block">Work Around the Clock.<span className="absolute bottom-2 left-0 w-full h-[8px] bg-teal-200/50 -z-10 rounded-full" /></span>
+          </h1>
+          <p className="text-ink-muted text-lg md:text-xl leading-relaxed mt-6 max-w-2xl mx-auto fadeup" style={{ animationDelay: ".1s" }}>
+            Search, hire, and deploy pre-trained AI employees to capture leads, answer customer questions, and sync immediately with HubSpot, Slack, and Zapier.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 mt-10 fadeup" style={{ animationDelay: ".15s" }}>
+            <Link to="/signup" className="btn btn-primary !px-10 !py-4 text-[16px] shadow-lift hover:translate-y-[-1px] transition-all duration-200 bg-gradient-to-r from-emerald-600 to-emerald-700 border-none hover:shadow-lg">
+              Hire AI Employee <I.ArrowRight className="ml-1.5" width={18} height={18} />
+            </Link>
+            <a href="#marketplace" className="btn btn-ghost !px-10 !py-4 text-[16px] border border-line hover:translate-y-[-1px] transition-all duration-200 bg-white hover:bg-slate-50">
+              Browse Directory
+            </a>
           </div>
-
-          {/* product visual */}
-          <div className="relative fadeup" style={{ animationDelay: ".18s" }}>
-            <InteractiveDemo />
+          <div className="flex justify-center items-center gap-6 mt-8 text-[13.5px] text-ink-muted/95 fadeup" style={{ animationDelay: ".2s" }}>
+            {["Start free", "No code required", "Cancel anytime"].map((t) => (
+              <span key={t} className="inline-flex items-center gap-1.5 font-medium"><I.Check width={14} height={14} className="text-success" strokeWidth={2.5} />{t}</span>
+            ))}
           </div>
         </div>
 
-
+        {/* Sintra.ai styled premium group visual banner */}
+        <div className="max-w-5xl mx-auto px-6 mt-16 relative z-10 fadeup" style={{ animationDelay: ".25s" }}>
+          <div className="bg-white/40 backdrop-blur-md border border-white/60 p-3 rounded-[32px] shadow-lift">
+            <div className="rounded-[24px] overflow-hidden shadow-soft border border-slate-200 bg-white relative group">
+              <img 
+                src="/hero_astronauts.png" 
+                alt="KaliGanAI space-suit AI employees group" 
+                className="w-full h-auto object-cover max-h-[380px] md:max-h-[460px] transform hover:scale-[1.01] transition-transform duration-700" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/10 via-transparent to-transparent pointer-events-none" />
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how" className="max-w-6xl mx-auto px-6 md:px-8 py-20">
-        <SectionHead eyebrow="3 steps · 5 minutes" title="From visitor to lead, on autopilot" sub="No engineers, no long setup. Teach it once and it works around the clock." />
-        <div className="grid md:grid-cols-3 gap-5">
-          {[
-            { t: "Connect your knowledge", d: "Paste your website URL, upload documents, PDFs, or sync text files. The AI learns your business details instantly.", icon: <I.Book width={20} height={20} /> },
-            { t: "Configure your employee", d: "Give your AI teammate a role, customize its goal (sales, support, routing), and select its conversational voice.", icon: <I.Cog width={20} height={20} /> },
-            { t: "Deploy", d: "Embed the chat widget with one line of code, and connect a dedicated phone number to start receiving voice calls.", icon: <I.Code width={20} height={20} /> },
-          ].map((s, i) => (
-            <div key={s.t} className="card p-6 relative fadeup" style={{ animationDelay: `${i * 0.07}s` }}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 grid place-items-center">{s.icon}</span>
-                <span className="font-display text-[28px] font-bold text-line">0{i + 1}</span>
+      {/* INTERACTIVE DEMO SANDBOX */}
+      <section id="demo" className="max-w-6xl mx-auto px-6 md:px-8 py-16 relative z-10 border-t border-slate-100">
+        <div className="grid md:grid-cols-[1.1fr_1fr] gap-12 items-center">
+          <div className="text-left">
+            <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full border border-mint-200 shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-ping" />
+              Live Sandbox Test
+            </span>
+            <h2 className="font-display text-[36px] md:text-[44px] font-bold leading-tight mt-4 text-ink">
+              Test drive your next <br />
+              <span className="text-emerald-700">AI teammate right now</span>
+            </h2>
+            <p className="text-ink-muted text-[16px] leading-relaxed mt-4">
+              Click on Maya, Dexter, or Milli in the mockup sidebar to swap their pre-trained profiles. Have a conversation over text chat, try calling them directly over voice, or crawl your own site live to test grounding.
+            </p>
+            <div className="mt-8 space-y-4">
+              <div className="flex gap-3 items-start">
+                <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 grid place-items-center font-bold shrink-0 mt-0.5 shadow-sm">1</span>
+                <div>
+                  <h4 className="font-bold text-ink text-[15px]">Cosmetic Vertical Grounding</h4>
+                  <p className="text-ink-muted text-[13.5px]">Swaps context templates instantly. Test local cleanings (Dexter) or SaaS sales questions (Maya).</p>
+                </div>
               </div>
-              <h3 className="font-display font-bold text-lg">{s.t}</h3>
-              <p className="text-ink-muted text-[14px] mt-1.5 leading-relaxed">{s.d}</p>
+              <div className="flex gap-3 items-start">
+                <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 grid place-items-center font-bold shrink-0 mt-0.5 shadow-sm">2</span>
+                <div>
+                  <h4 className="font-bold text-ink text-[15px]">Real-Time Voice Viz</h4>
+                  <p className="text-ink-muted text-[13.5px]">Click "Call" to speak out loud. Natural speech-to-speech engine with instant custom responses.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="absolute -inset-4 bg-emerald-500/5 rounded-[40px] blur-2xl -z-10" />
+            <InteractiveDemo />
+          </div>
+        </div>
+      </section>
+
+      {/* READY-TO-HIRE AI EMPLOYEE DIRECTORY */}
+      <section id="marketplace" className="max-w-6xl mx-auto px-6 md:px-8 py-20 relative z-10 border-t border-slate-100">
+        <SectionHead 
+          eyebrow="Marketplace Directory" 
+          title="Ready-to-Hire pre-trained employees" 
+          sub="Choose from our standard roster of specialized AI Workers. They sync with integrations and load in 5 minutes." 
+        />
+        <div className="grid md:grid-cols-3 gap-6 mt-12">
+          {AI_EMPLOYEES.map((emp, i) => (
+            <div 
+              key={emp.id} 
+              className="card p-6 flex flex-col justify-between border border-line bg-surface relative overflow-hidden group hover:border-emerald-600/40 hover:shadow-lift transition-all duration-300 rounded-[24px] text-left"
+              style={{ animationDelay: `${i * 0.08}s` }}
+            >
+              <div>
+                <div className="flex justify-between items-start">
+                  <div className="w-16 h-16 rounded-[18px] bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 overflow-hidden relative shadow-sm shrink-0">
+                    <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform" />
+                  </div>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${emp.badgeColor}`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                    Active Roster
+                  </span>
+                </div>
+                
+                <h3 className="font-display font-bold text-xl text-ink mt-4">{emp.name}</h3>
+                <p className="text-emerald-700 text-xs font-bold font-mono tracking-wide uppercase mt-0.5">{emp.role}</p>
+                <p className="text-ink-muted text-[13.5px] mt-2.5 leading-relaxed">{emp.desc}</p>
+                
+                <div className="mt-4 pt-3 border-t border-slate-100">
+                  <div className="text-[10px] font-extrabold text-ink-muted uppercase tracking-wider">Grounding Vertical</div>
+                  <div className="inline-block bg-slate-100 text-slate-800 text-[11px] font-semibold px-2 py-0.5 rounded-md mt-1 font-mono">
+                    {emp.vertical}.yaml
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="text-[10px] font-extrabold text-ink-muted uppercase tracking-wider mb-1.5">Core Skills</div>
+                  <div className="flex flex-wrap gap-1">
+                    {(emp.id === "maya" 
+                      ? ["Lead Qualification", "Auto-Scoring", "CRM sync", "Meeting Booking"] 
+                      : emp.id === "dexter"
+                      ? ["Cleaner Dispatch", "Slot Booking", "FAQ Answering", "Google Cal Sync"]
+                      : ["Agency Scout", "Package Details", "Strategy Booking", "Client Routing"]
+                    ).map(skill => (
+                      <span key={skill} className="bg-emerald-50/50 text-emerald-800 text-[10.5px] font-semibold border border-mint-100 rounded-lg px-2 py-0.5">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="text-left">
+                    <span className="text-[9px] text-ink-muted block uppercase font-bold tracking-wider leading-none">Compatible integrations</span>
+                    <div className="flex gap-1.5 mt-1">
+                      {(emp.id === "maya" 
+                        ? ["HubSpot", "Slack", "Zapier"] 
+                        : emp.id === "dexter"
+                        ? ["Calendar", "Stripe", "WhatsApp"]
+                        : ["Salesforce", "Calendly", "Notion"]
+                      ).map(tag => (
+                        <span key={tag} className="text-[10px] text-slate-500 font-semibold bg-slate-50 border border-slate-100 rounded px-1.5 py-0.5 leading-none">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                <Link 
+                  to="/signup" 
+                  className={`btn w-full !py-2.5 rounded-xl font-bold text-[12px] flex items-center justify-center gap-1.5 transition-all group-hover:translate-y-[-1px] ${
+                    emp.id === 'maya' ? 'btn-primary' : 'btn-ghost border border-slate-200 bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  Hire {emp.name} <I.ArrowRight width={13} height={13} />
+                </Link>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* FEATURE BENTO */}
-      <section className="max-w-6xl mx-auto px-6 md:px-8 pb-20">
-        <SectionHead eyebrow="Everything in one place" title="An employee, not just a chatbot" sub="It doesn't just chat — it knows your business, talks out loud, and brings you customers." />
-        <div className="grid md:grid-cols-3 gap-5">
-          {/* Block 1: Grounded chat */}
-          <div className="card p-6 md:col-span-2 flex flex-col justify-between min-h-[300px] border border-line bg-surface relative overflow-hidden group hover:border-emerald-600/40 transition duration-300">
+      {/* PLATFORM CAPABILITIES BENTO SECTION */}
+      <section className="max-w-6xl mx-auto px-6 md:px-8 py-20 relative z-10 border-t border-slate-100">
+        <SectionHead 
+          eyebrow="Core Platform Capabilities" 
+          title="Everything it takes to deploy AI workers" 
+          sub="No engineers, no long setup. Teach it once and let it work around the clock." 
+        />
+        <div className="grid md:grid-cols-3 gap-6 mt-12">
+          {/* Bento Item 1: Grounded Chat & Lead Ingestion */}
+          <div className="card p-6 md:col-span-2 flex flex-col justify-between border border-line bg-surface relative overflow-hidden group hover:border-emerald-600/40 transition duration-300 rounded-[24px] text-left">
             <div>
               <div className="flex items-center gap-2.5 mb-3">
-                <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center"><I.Sparkle width={20} height={20} /></span>
-                <h3 className="font-display font-bold text-lg text-ink">Grounded chat</h3>
+                <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center shadow-sm">
+                  <I.Sparkle width={20} height={20} />
+                </span>
+                <h3 className="font-display font-bold text-lg text-ink">Grounded Chat & Auto Lead Capture</h3>
               </div>
               <p className="text-ink-muted text-[14.5px] leading-relaxed max-w-lg">
-                Answers only from your data, never invents. Grounded in your own documents, files, and web pages. If it doesn't know the answer, it gracefully takes details so a team member can follow up.
+                Grounded strictly in your docs, files, and website text. If it doesn't know the answer, it collects visitor details and scores them as Hot, Warm, or Cold based on buying intent signals.
               </p>
             </div>
             
-            <div className="mt-6">
-              <div className="text-[11px] font-bold text-ink-muted/80 uppercase tracking-wider mb-2">Synced Knowledge Sources</div>
+            <div className="mt-8">
+              <div className="text-[10px] font-bold text-ink-muted/80 uppercase tracking-wider mb-2 text-left">Grounded Data Source Sync</div>
               <div className="flex flex-wrap gap-2.5">
                 {[
-                  { name: "📄 Services.pdf", size: "1.2 MB" },
-                  { name: "❓ Pricing FAQ", size: "24 entries" },
-                  { name: "🔗 acme.com", size: "12 pages" },
-                  { name: "📂 onboarding_guide.md", size: "15 KB" }
+                  { name: "📄 Services_pricing.pdf", size: "1.2 MB" },
+                  { name: "❓ Pricing FAQ Entries", size: "24 articles" },
+                  { name: "🔗 website_home.com", size: "12 pages" }
                 ].map((c) => (
                   <span key={c.name} className="inline-flex items-center gap-2 bg-white border border-line rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold text-ink shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
@@ -1022,16 +1162,18 @@ export function Home() {
             </div>
           </div>
 
-          {/* Block 2: Web + phone voice */}
-          <div className="card p-6 flex flex-col justify-between min-h-[300px] border border-line bg-surface relative overflow-hidden group hover:border-emerald-600/40 transition duration-300">
+          {/* Bento Item 2: Real-time Voice Agents */}
+          <div className="card p-6 flex flex-col justify-between border border-line bg-surface relative overflow-hidden group hover:border-emerald-600/40 transition duration-300 rounded-[24px] text-left">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center"><I.Mic width={20} height={20} /></span>
-                <span className="text-[10px] font-bold bg-teal-400 text-[#08332a] px-2 py-0.5 rounded-full tracking-wide">WEB & PHONE</span>
+                <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center shadow-sm">
+                  <I.Mic width={20} height={20} />
+                </span>
+                <span className="text-[9px] font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full tracking-wide">PHONE & WEB</span>
               </div>
-              <h3 className="font-display font-bold text-lg text-ink">Web + phone voice</h3>
+              <h3 className="font-display font-bold text-lg text-ink">Speech Voice Agents</h3>
               <p className="text-ink-muted text-[14.5px] mt-2.5 leading-relaxed">
-                Talks on your site and answers your number. A natural, real-time voice experience using the exact same knowledge base as your chat.
+                Giving voice to the AI employees. Let site visitors call them directly over WebRTC, or buy dedicated phone lines to receive client calls automatically.
               </p>
             </div>
             
@@ -1041,61 +1183,50 @@ export function Home() {
                   <I.Phone width={14} height={14} fill="currentColor" />
                 </span>
                 <div className="text-left">
-                  <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Active Phone Line</div>
+                  <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Voice Agent Number</div>
                   <div className="text-[12.5px] font-semibold text-white font-mono leading-none mt-0.5">+1 (800) KALI-GAN</div>
                 </div>
               </div>
-              <span className="flex items-center gap-1.5 bg-emerald-900 border border-emerald-700 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="flex items-center gap-1 bg-emerald-900 border border-emerald-700 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-success animate-ping" />
                 Live
               </span>
             </div>
           </div>
 
-          {/* Block 3: Lead capture & qualification */}
-          <div className="card p-6 md:col-span-3 flex flex-col justify-between min-h-[300px] border border-line bg-surface relative overflow-hidden group hover:border-emerald-600/40 transition duration-300">
-            <div>
-              <div className="flex items-center gap-2.5 mb-3">
-                <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center"><I.Users width={20} height={20} /></span>
-                <h3 className="font-display font-bold text-lg text-ink">Lead capture & qualification</h3>
-              </div>
-              <p className="text-ink-muted text-[14.5px] leading-relaxed max-w-2xl">
-                Every conversation scored Hot/Warm/Cold and routed to you. The AI identifies buying signals, asks for key details at the perfect conversational moment, and drops the parsed lead profile straight into your workspace.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-4 mt-6">
-              <div className="bg-surface-2 border border-line rounded-xl p-3 text-[12px] space-y-2">
-                <div className="flex justify-between items-center text-[10px] text-ink-muted font-bold uppercase">
-                  <span>Chat Conversation</span>
-                  <span>Live Extract</span>
+          {/* Bento Item 3: Built-in Leads Dashboard */}
+          <div className="card p-6 md:col-span-3 flex flex-col justify-between border border-line bg-surface relative overflow-hidden group hover:border-emerald-600/40 transition duration-300 rounded-[24px] text-left">
+            <div className="grid md:grid-cols-[1.1fr_1fr] gap-8 items-center">
+              <div>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center shadow-sm">
+                    <I.Dashboard width={20} height={20} />
+                  </span>
+                  <h3 className="font-display font-bold text-lg text-ink">Built-in Workspace Dashboard</h3>
                 </div>
-                <div className="space-y-1.5 text-left">
-                  <div>
-                    <span className="text-emerald-700 font-bold">Visitor: </span>
-                    <span className="text-ink-muted">Can I get a demo? My name is Sarah, email sarah@acme.com, phone 555-0199.</span>
-                  </div>
-                  <div>
-                    <span className="text-emerald-700 font-bold">AI Employee: </span>
-                    <span className="text-ink-muted">Got it, Sarah! I've scheduled your demo and routed this to our team.</span>
-                  </div>
+                <p className="text-ink-muted text-[14.5px] leading-relaxed">
+                  Every captured lead is stored inside a highly detailed, local dashboard. Browse conversational histories, analyze lead buying intent scores, and sync contacts seamlessly with third-party integrations.
+                </p>
+                <div className="mt-4 flex gap-4 text-[13px] text-ink-muted">
+                  <span>🎯 Score Hot/Warm/Cold</span>
+                  <span>⚡ Live transcript parsing</span>
                 </div>
               </div>
-              
+
               <div className="bg-white border border-line rounded-xl p-3 flex flex-col justify-between shadow-soft">
                 <div className="flex justify-between items-start">
                   <div className="text-left">
                     <div className="font-bold text-[13px] text-ink">Sarah Jenkins</div>
                     <div className="text-[11px] text-ink-muted">sarah@acme.com · acme.com</div>
                   </div>
-                  <span className="inline-flex items-center gap-1 bg-[#fdeceb] text-hot text-[11px] font-extrabold px-2 py-0.5 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-hot animate-pulse" />
-                    Hot Lead
+                  <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-red-100">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+                    Hot Lead (Score: 92)
                   </span>
                 </div>
-                <div className="mt-2 pt-2 border-t border-line/60 flex justify-between items-center text-[11px]">
+                <div className="mt-3 pt-2.5 border-t border-line/60 flex justify-between items-center text-[10.5px]">
                   <span className="text-ink-muted">Intent: <b className="text-ink font-semibold">Demo Request</b></span>
-                  <span className="text-ink-muted">Captured via: <b className="text-ink font-semibold">Website Chat</b></span>
+                  <span className="text-ink-muted">Captured via: <b className="text-ink font-semibold">Maya (Chat)</b></span>
                 </div>
               </div>
             </div>
@@ -1103,31 +1234,30 @@ export function Home() {
         </div>
       </section>
 
-      {/* VOICE HIGHLIGHT BAND */}
-      <section className="max-w-6xl mx-auto px-6 md:px-8 pb-20">
-        <div className="rounded-[24px] text-white overflow-hidden relative grid md:grid-cols-[1fr_.8fr] gap-8 items-center p-8 md:p-12"
-          style={{ background: "linear-gradient(150deg,#0E7A5F,#0B5A45)" }}>
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(220px 220px at 88% 10%,rgba(95,201,176,.4),transparent 70%)" }} />
-          <div className="relative">
-            <span className="inline-flex items-center gap-2 bg-white/15 border border-white/20 rounded-full px-3 py-1.5 text-[12.5px] font-semibold"><I.Mic width={13} height={13} /> Voice agent</span>
-            <h2 className="font-display text-[30px] md:text-[36px] font-bold leading-[1.1] mt-4">Your visitors can just talk to it.</h2>
-            <p className="text-white/85 text-[15.5px] mt-3 max-w-md">A natural, real-time voice conversation — answering instantly from your knowledge base and capturing leads, the same as chat. The thing no plain chatbot does.</p>
-            <Link to="/signup" className="btn bg-white text-emerald-700 hover:bg-[#eafaf3] !px-6 !py-3 mt-6 inline-flex">Try the voice agent</Link>
-          </div>
-          <div className="relative grid place-items-center py-2">
-            <div className="absolute rounded-full border-2 border-white/30" style={{ width: 150, height: 150, animation: "ring 2.6s ease-out infinite" }} />
-            <div className="absolute rounded-full border-2 border-white/30" style={{ width: 150, height: 150, animation: "ring 2.6s ease-out infinite 1.3s" }} />
-            <div className="w-[92px] h-[92px] rounded-full grid place-items-center border border-white/30" style={{ background: "rgba(255,255,255,.16)" }}>
-              <div className="flex items-end gap-[3px] h-[28px]">
-                {[0, .15, .3, .45, .2].map((d, i) => <i key={i} className="w-[3px] rounded bg-[#CFF3E6]" style={{ animation: "eq .9s ease-in-out infinite", animationDelay: `${d}s`, height: 7 }} />)}
-              </div>
+      {/* FLOATING INTEGRATIONS LOGO GRID */}
+      <section className="max-w-6xl mx-auto px-6 md:px-8 py-16 relative z-10 border-t border-slate-100">
+        <div className="text-center max-w-xl mx-auto mb-10">
+          <h3 className="text-xs uppercase font-extrabold tracking-widest text-slate-400">1000+ Integrations Supported</h3>
+          <p className="text-ink-muted text-sm mt-1">Connect your AI employees with the software your team already uses.</p>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 items-center justify-items-center">
+          {[
+            { name: "HubSpot", icon: "https://cdn.worldvectorlogo.com/logos/hubspot.svg" },
+            { name: "Slack", icon: "https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg" },
+            { name: "Zapier", icon: "https://cdn.worldvectorlogo.com/logos/zapier.svg" },
+            { name: "Salesforce", icon: "https://cdn.worldvectorlogo.com/logos/salesforce-2.svg" },
+            { name: "Stripe", icon: "https://cdn.worldvectorlogo.com/logos/stripe-4.svg" },
+            { name: "Shopify", icon: "https://cdn.worldvectorlogo.com/logos/shopify.svg" }
+          ].map((logo) => (
+            <div key={logo.name} className="bg-white/80 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-center h-16 w-full shadow-soft hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 group">
+              <img src={logo.icon} alt={logo.name} className="h-7 w-auto object-contain grayscale group-hover:grayscale-0 opacity-70 group-hover:opacity-100 transition-all duration-200" />
             </div>
-          </div>
+          ))}
         </div>
       </section>
 
       {/* PRICING PREVIEW */}
-      <section className="max-w-6xl mx-auto px-6 md:px-8 pb-20">
+      <section className="max-w-6xl mx-auto px-6 md:px-8 pb-20 border-t border-slate-100 pt-16">
         <SectionHead eyebrow="Simple pricing" title="Start free. Upgrade when it's working." sub="Most tools make you pay extra for everything. Voice is included on Growth." />
         <PricingGrid />
         <p className="text-center text-ink-muted text-[12.5px] mt-5">Prices in USD per month · cancel anytime · voice usage may apply on high volume.</p>
@@ -1151,7 +1281,6 @@ export function Home() {
     </main>
   );
 }
-
 /* ====================== SHARED: PRICING + FAQ ===================== */
 const tiers = [
   {
@@ -1298,29 +1427,49 @@ export function Features() {
     { icon: <I.Dashboard width={20} height={20} />, t: "Outcome dashboard", d: "See conversations, captured leads, and hot opportunities at a glance — the numbers that actually grow revenue." },
   ];
   return (
-    <main>
-      <section className="relative overflow-hidden">
-        <Glow className="-top-40 right-[-100px]" />
-        <div className="max-w-3xl mx-auto px-6 md:px-8 pt-20 pb-12 text-center relative">
+    <main className="relative overflow-hidden bg-gradient-to-br from-canvas via-[#EDF5DE] to-[#E5EED1] pb-24 min-h-[80vh]">
+      <Glow className="-top-40 right-[-100px] opacity-60" />
+      <Dots className="inset-0 opacity-60" />
+      
+      <section className="relative">
+        <div className="max-w-3xl mx-auto px-6 md:px-8 pt-20 pb-12 text-center relative z-10">
           <div className="flex justify-center mb-4"><Eyebrow>Features</Eyebrow></div>
-          <h1 className="font-display text-[42px] font-bold leading-[1.08]">Everything it takes to convert a visitor</h1>
+          <h1 className="font-display text-[42px] font-bold leading-[1.08] text-ink">Everything it takes to convert a visitor</h1>
           <p className="text-ink-muted text-[16px] mt-4">Chat, voice, knowledge, and lead capture — working together as one employee.</p>
         </div>
       </section>
-      <section className="max-w-5xl mx-auto px-6 md:px-8 pb-16">
+
+      <section className="max-w-5xl mx-auto px-6 md:px-8 pb-16 relative z-10">
+        {/* Visual mini-showcase of the three astronauts representing features */}
+        <div className="bg-white/40 border border-white/60 p-6 rounded-[28px] shadow-soft mb-12 flex flex-col md:flex-row items-center gap-8 text-left">
+          <div className="flex -space-x-4 shrink-0">
+            {["/maya_astronaut.png", "/dexter_astronaut.png", "/milli_astronaut.png"].map((src, i) => (
+              <div key={i} className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-white overflow-hidden shadow-md">
+                <img src={src} alt="astronaut" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+          <div>
+            <h3 className="font-display font-bold text-lg text-ink">Pre-Trained Employees Ready for Action</h3>
+            <p className="text-ink-muted text-sm mt-1 leading-relaxed">
+              Every feature listed below is pre-packaged and pre-trained into our space-suit employees. Choose Maya, Dexter, or Milli to get full multi-channel capabilities live in under 5 minutes.
+            </p>
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-4">
           {rows.map((r, i) => (
-            <div key={r.t} className="card p-6 flex gap-4 fadeup" style={{ animationDelay: `${i * 0.05}s` }}>
-              <span className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 grid place-items-center shrink-0">{r.icon}</span>
+            <div key={r.t} className="card p-6 flex gap-4 bg-white/60 backdrop-blur-sm hover:border-emerald-600/40 hover:bg-white hover:shadow-soft transition-all duration-300 rounded-[20px] text-left" style={{ animationDelay: `${i * 0.05}s` }}>
+              <span className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center shrink-0 shadow-sm">{r.icon}</span>
               <div>
-                <h3 className="font-display font-bold text-[16.5px]">{r.t}</h3>
+                <h3 className="font-display font-bold text-[16.5px] text-ink">{r.t}</h3>
                 <p className="text-ink-muted text-[14px] mt-1.5 leading-relaxed">{r.d}</p>
               </div>
             </div>
           ))}
         </div>
         <div className="text-center mt-12">
-          <Link to="/signup" className="btn btn-primary !px-7 !py-3">Start free <I.ArrowRight width={16} height={16} /></Link>
+          <Link to="/signup" className="btn btn-primary !px-8 !py-3">Start free <I.ArrowRight className="ml-1" width={16} height={16} /></Link>
         </div>
       </section>
     </main>
@@ -1330,22 +1479,52 @@ export function Features() {
 /* ============================== PRICING =========================== */
 export function Pricing() {
   return (
-    <main>
-      <section className="relative overflow-hidden">
-        <Glow className="-top-40 left-[-100px]" />
-        <div className="max-w-3xl mx-auto px-6 md:px-8 pt-20 pb-10 text-center relative">
+    <main className="relative overflow-hidden bg-gradient-to-br from-canvas via-[#EDF5DE] to-[#E5EED1] pb-24 min-h-[80vh]">
+      <Glow className="-top-40 right-[-100px] opacity-60" />
+      <Dots className="inset-0 opacity-60" />
+
+      <section className="relative">
+        <div className="max-w-3xl mx-auto px-6 md:px-8 pt-20 pb-10 text-center relative z-10">
           <div className="flex justify-center mb-4"><Eyebrow>Pricing</Eyebrow></div>
-          <h1 className="font-display text-[42px] font-bold leading-[1.08]">Pricing that pays for itself</h1>
+          <h1 className="font-display text-[42px] font-bold leading-[1.08] text-ink">Pricing that pays for itself</h1>
           <p className="text-ink-muted text-[16px] mt-4">One captured customer usually covers the month. Start free and upgrade when it's working.</p>
         </div>
       </section>
-      <section className="max-w-6xl mx-auto px-6 md:px-8 pb-12">
+
+      <section className="max-w-5xl mx-auto px-6 md:px-8 pb-20 relative z-10">
         <PricingGrid />
-        <p className="text-center text-ink-muted text-[12.5px] mt-5">Prices in USD per month · cancel anytime · voice usage may apply on high volume.</p>
-      </section>
-      <section className="max-w-3xl mx-auto px-6 md:px-8 pb-24">
-        <SectionHead eyebrow="Questions" title="Pricing FAQ" />
-        <FaqList />
+
+        {/* Pre-Trained Roster Value section inside Pricing */}
+        <div className="mt-16 bg-white/60 border border-line p-8 rounded-[28px] shadow-soft flex flex-col md:flex-row items-center justify-between gap-8 text-left">
+          <div className="flex-1">
+            <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 text-[10.5px] font-extrabold px-3 py-1 rounded-full border border-mint-200 shadow-sm uppercase tracking-wider">
+              Roster Templates Included
+            </span>
+            <h3 className="font-display font-bold text-xl text-ink mt-3">Full Access to Pre-Trained Employees</h3>
+            <p className="text-ink-muted text-sm mt-2 leading-relaxed">
+              Every plan includes complete access to our space-suit roster: Maya (Sales), Dexter (Services), and Milli (Marketing). You don't have to build agents from scratch—just select your template, map your website URL, and deploy in minutes.
+            </p>
+          </div>
+          <div className="flex gap-4 shrink-0 justify-center">
+            {[
+              { name: "Maya", src: "/maya_astronaut.png", color: "border-emerald-500" },
+              { name: "Dexter", src: "/dexter_astronaut.png", color: "border-blue-500" },
+              { name: "Milli", src: "/milli_astronaut.png", color: "border-violet-500" }
+            ].map((emp) => (
+              <div key={emp.name} className="flex flex-col items-center gap-1">
+                <div className={`w-14 h-14 rounded-2xl bg-white border-2 ${emp.color} overflow-hidden shadow-sm`}>
+                  <img src={emp.src} alt={emp.name} className="w-full h-full object-cover" />
+                </div>
+                <span className="text-[11px] font-bold text-ink-muted">{emp.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="max-w-3xl mx-auto mt-20">
+          <SectionHead eyebrow="Questions" title="Pricing FAQ" />
+          <FaqList />
+        </div>
       </section>
     </main>
   );
@@ -1800,20 +1979,20 @@ const competitorData: Record<string, {
   features: { name: string; kaligan: boolean | string; competitor: boolean | string; desc: string }[];
   summary: string;
 }> = {
-  chatgpt: {
-    name: "ChatGPT & LLM Wrappers",
-    tagline: "Why generic wrappers fall short of a dedicated lead employee.",
-    desc: "LLM wrappers simply pipe user inputs to ChatGPT. They lack session state, business RAG grounding, lead scoring pipelines, and multi-channel voice integrations.",
-    strength: "Cheap to spin up initially.",
-    weakness: "Hallucinates answers, does not capture structured lead data, requires custom coding for voice, zero database integrations.",
+  sintra: {
+    name: "Sintra.ai & AI Worker Marketplaces",
+    tagline: "Why dedicated lead-capture AI employees beat prompt-template directories.",
+    desc: "AI worker directories offer generic prompt templates and trigger sequences. They lack live WebRTC web calls, local lead qualification dashboards, and integrated safety-first RAG grounding built directly into your website widgets.",
+    strength: "Broad variety of predefined prompt roles.",
+    weakness: "No real-time phone/web voice lines, no unified chat widget, requires external automation tools (Zapier/Make) to route and view captured leads.",
     features: [
-      { name: "Chat Widget", kaligan: "Included (One snippet)", competitor: "Custom code / No widget", desc: "Out-of-the-box chat embed that works on any website." },
-      { name: "Voice Integration", kaligan: "Built-in (Web + BYON Phone)", competitor: "Requires Vapi/Twilio coding", desc: "Grounded voice conversations over browser and phone." },
-      { name: "Lead Qualification", kaligan: "Auto-Scored (Hot/Warm/Cold)", competitor: "None (Raw transcript)", desc: "AI automatically rates intent and routes leads." },
-      { name: "KB Grounding (RAG)", kaligan: "Yes (PDF, Crawler, FAQ)", competitor: "Manual prompt context only", desc: "Guaranteed business context with strict safety limits." },
-      { name: "Stripe Billing/Gating", kaligan: "Built-in limits", competitor: "None", desc: "Easy team billing limits and usage metering." },
+      { name: "Live Web & Phone Voice", kaligan: "Built-in (WebRTC + BYON Phone)", competitor: "None (Text only / prompts)", desc: "Interact via real-time speech lines on web or phone." },
+      { name: "Zero-Code Website Widget", kaligan: "Included (One-line script)", competitor: "Requires third-party chat tools", desc: "Embed and run the employee directly on your frontend." },
+      { name: "Structured Lead Dashboard", kaligan: "Included (Auto-scores intent)", competitor: "External (Must sync via Make/Zapier)", desc: "View hot/warm leads and transcripts instantly in one place." },
+      { name: "Doc-Grounded Safety", kaligan: "Strict RAG (Zero hallucinations)", competitor: "Prompt-based context only", desc: "Ensures the worker only references your official docs." },
+      { name: "Setup Simplicity", kaligan: "5 minutes (Url scan)", competitor: "Complex trigger/flow mapping", desc: "No complex node-based flow builders needed." },
     ],
-    summary: "ChatGPT is a generic calculator; KaliGanAI is a trained sales employee."
+    summary: "Don't pay for prompt libraries. Get a fully integrated voice and text employee."
   },
   vapi: {
     name: "Vapi & Developer Voice APIs",
@@ -1849,7 +2028,7 @@ const competitorData: Record<string, {
 
 export function Compare() {
   const { competitor } = useParams<{ competitor: string }>();
-  const compId = competitor && competitorData[competitor] ? competitor : "chatgpt";
+  const compId = competitor && competitorData[competitor] ? competitor : "sintra";
   const data = competitorData[compId];
 
   return (
@@ -1879,7 +2058,7 @@ export function Compare() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4 mb-12">
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
           <div className="p-5 rounded-2xl bg-emerald-50/60 border border-mint-300/50 backdrop-blur-sm">
             <div className="font-display font-bold text-emerald-800 text-[12px] uppercase tracking-wider mb-2">Our Advantage</div>
             <p className="text-ink text-[14px] leading-relaxed">
@@ -1890,6 +2069,21 @@ export function Compare() {
             <div className="font-display font-bold text-ink-muted text-[12px] uppercase tracking-wider mb-2">{data.name} Limits</div>
             <p className="text-ink-muted text-[14px] leading-relaxed">
               {data.weakness}
+            </p>
+          </div>
+        </div>
+
+        {/* Maya's Quote Callout Banner */}
+        <div className="flex gap-4 p-5 rounded-2xl bg-white border border-slate-200 shadow-sm mb-12 items-center text-left">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-slate-100 overflow-hidden shrink-0">
+            <img src="/maya_astronaut.png" alt="Maya" className="w-full h-full object-cover" />
+          </div>
+          <div>
+            <div className="text-[11px] font-extrabold uppercase text-emerald-700 tracking-wider">Maya's Take</div>
+            <p className="text-[13px] text-ink-muted leading-relaxed mt-0.5">
+              "{data.name.includes("Sintra.ai") 
+                ? "Sintra has a huge library of prompt templates, but they cannot answer browser voice calls, host inline chat widgets, or grade qualified contacts automatically in a local dashboard. KaliGanAI is built for active leads execution." 
+                : "Why build custom integrations or manage complex automation tools when you can get a single pre-trained employee live in 5 minutes?"}"
             </p>
           </div>
         </div>
@@ -1956,6 +2150,184 @@ export function Compare() {
           <div className="mt-6 flex justify-center gap-4">
             <Link to="/signup" className="btn btn-primary px-6 py-2.5">Start Free Trial</Link>
             <Link to="/contact" className="btn btn-ghost px-6 py-2.5">Talk to Us</Link>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+/* ============================== BLOG SECTION ========================== */
+
+export const BLOG_POSTS = [
+  {
+    id: "ai-employees-replacing-forms",
+    title: "Why AI Employees are Replacing Traditional Lead Capture Forms",
+    excerpt: "Static contact forms are silent at the exact moment a buyer is ready to convert. Learn how grounded, conversational AI widgets are increasing lead conversion rates by 40%.",
+    content: `
+      <p class="mb-4">For the last two decades, the standard way to collect contact information from website visitors was the static contact form. A user lands on your homepage, reads your copy, and if they are interested enough, they type their name, email, and request into a box, then click "Submit".</p>
+      <p class="mb-4">But there's a problem: static forms are passive. They don't answer immediate objections, they don't explain pricing nuances, and they certainly don't engage visitors in real-time. If a buyer has a quick question before they feel comfortable giving you their email, a static form fails them.</p>
+      <h3 class="font-display font-bold text-lg text-ink mt-6 mb-3">The Rise of Conversational Lead Capture</h3>
+      <p class="mb-4">This is where pre-trained AI Employees come in. Instead of a silent form waiting in the corner of your page, an AI teammate like Maya can actively greet the visitor, guide them through your features, answer grounding-verified FAQs, and smoothly request their contact details when buying intent is identified.</p>
+      <p class="mb-4">According to recent user data, websites that replace or supplement their static contact forms with grounded conversational agents see an average 40% increase in lead submission rates. This is because users feel they are getting value—real, instant answers to their questions—in exchange for their contact information.</p>
+      <h3 class="font-display font-bold text-lg text-ink mt-6 mb-3">Auto-Scoring Lead Quality</h3>
+      <p class="mb-4">Another massive advantage is automatic lead scoring. Unlike a form where every submission looks the same, an AI Employee analyzes the conversation transcript semantically. By measuring the specificity of a visitor's questions and their urgency, KaliGanAI automatically grades leads as Hot, Warm, or Cold, placing them into your dashboard and notifying your sales team accordingly.</p>
+      <p class="mb-4">The bottom line? Stop letting visitors leave because your website is silent. Deploying an active AI Worker ensures you capture every single opportunity, 24/7.</p>
+    `,
+    category: "AI Strategy",
+    readTime: "4 min read",
+    date: "June 24, 2026",
+    author: "KaliGanAI Team",
+    avatar: "/maya_astronaut.png",
+    image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: "giving-voice-to-ai-employees",
+    title: "Giving Voice to AI Employees: WebRTC and Dedicated Phone Lines",
+    excerpt: "Text chat is only half the battle. Discover how combining instant browser voice widgets with phone numbers creates a unified lead generation powerhouse.",
+    content: `
+      <p class="mb-4">While text-based chat has become standard, the telephone remains the highest-converting sales channel for small and medium businesses. But answering calls manually is expensive, and legacy IVR systems (press 1 for sales, press 2 for support) frustrate customers.</p>
+      <p class="mb-4">By giving a voice to your AI Employees, you bridge the gap between digital convenience and human connection. Visitors can simply click a mic button in their browser or dial a direct phone number to speak with a pre-trained agent in natural speech.</p>
+      <h3 class="font-display font-bold text-lg text-ink mt-6 mb-3">How WebRTC Speech Agents Scale Customer Engagement</h3>
+      <p class="mb-4">With WebRTC technology, high-fidelity audio streams directly through the web browser. Customers can ask pricing questions, book slot cleanings, or qualify themselves for service programs out loud. There is no software to install or number to dial—just immediate speech-to-speech reasoning with sub-second response latency.</p>
+      <h3 class="font-display font-bold text-lg text-ink mt-6 mb-3">Telephony & Bring Your Own Number (BYON)</h3>
+      <p class="mb-4">For businesses with existing phone systems, voice capabilities extend to standard telephone lines. By mapping incoming Twilio webhooks directly to your KaliGanAI workspace, inbound calls are intercepted by your AI worker. Whether a client calls from their phone or chats on your homepage, they converse with the exact same knowledge base.</p>
+      <p class="mb-4">All call transcripts, lead scores, and customer contacts are automatically saved to your workspace dashboard. This creates a unified pipeline where text and voice leads are collected, categorized, and synced to your favorite CRM tools without manual double-entry.</p>
+    `,
+    category: "Voice Tech",
+    readTime: "5 min read",
+    date: "June 22, 2026",
+    author: "KaliGanAI Team",
+    avatar: "/dexter_astronaut.png",
+    image: "https://images.unsplash.com/photo-1589254065878-42c9da997008?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: "grounded-rag-vs-hallucinations",
+    title: "Grounded RAG vs Generative Hallucinations: Building a Safe AI Worker",
+    excerpt: "Why custom prompt engineering is not enough for customer-facing applications. Learn how strict vector database grounding guarantees accurate, on-brand responses.",
+    content: `
+      <p class="mb-4">We've all seen the headlines about customer service chatbots going off-script—recommending competitors, giving away free products, or hallucinating false policy pricing. These issues arise when builders rely solely on prompt engineering to guide behavior.</p>
+      <p class="mb-4">For a customer-facing AI employee, safety and accuracy are non-negotiable. If an AI doesn't know a pricing detail, it should offer to take the customer's contact info rather than making up a number.</p>
+      <h3 class="font-display font-bold text-lg text-ink mt-6 mb-3">What is Grounded RAG?</h3>
+      <p class="mb-4">Retrieval-Augmented Generation (RAG) is a technique that limits the LLM's workspace. Instead of letting the AI search its entire training data for answers, the system first retrieves relevant snippets from the official knowledge base files you upload (like PDF price sheets, FAQ guides, or website scans).</p>
+      <p class="mb-4">The AI model is then explicitly instructed: <i>"Answer this query using only the provided facts. If the facts do not contain the answer, say that you don't know and offer to collect details."</i></p>
+      <h3 class="font-display font-bold text-lg text-ink mt-6 mb-3">Ensuring Brand Safety</h3>
+      <p class="mb-4">By employing strict vector database grounding, KaliGanAI keeps your AI employees inside secure boundaries. You get the reasoning power of modern generative intelligence, coupled with the reliability of a deterministic database. This gives small teams the confidence to put AI workers live on their homepage without constant supervision.</p>
+    `,
+    category: "AI Safety",
+    readTime: "3 min read",
+    date: "June 20, 2026",
+    author: "KaliGanAI Team",
+    avatar: "/milli_astronaut.png",
+    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80"
+  }
+];
+
+export function Blog() {
+  return (
+    <main className="relative overflow-hidden bg-gradient-to-br from-canvas via-[#EDF5DE] to-[#E5EED1] pb-24 min-h-[70vh]">
+      <Glow className="-top-44 left-1/2 -translate-x-1/2 opacity-60" />
+      <Dots className="inset-0 opacity-60" />
+
+      <div className="max-w-6xl mx-auto px-6 md:px-8 pt-16 md:pt-20 relative z-10">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="flex justify-center mb-4"><Eyebrow>KaliGanAI Blog</Eyebrow></div>
+          <h1 className="font-display text-[42px] font-bold leading-[1.08] text-ink">Insight for small teams that want to scale</h1>
+          <p className="text-ink-muted text-[16px] mt-4">Read about AI employees, grounded website widgets, voice caller integrations, and automated lead scoring.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 text-left">
+          {BLOG_POSTS.map((post) => (
+            <Link 
+              key={post.id} 
+              to={`/blog/${post.id}`} 
+              className="card p-0 flex flex-col justify-between border border-line bg-white/70 backdrop-blur-sm overflow-hidden group hover:border-emerald-600/40 hover:shadow-lift hover:bg-white transition-all duration-300 rounded-[24px]"
+            >
+              <div>
+                <div className="aspect-[16/10] overflow-hidden bg-slate-100 border-b border-line relative">
+                  <img src={post.image} alt={post.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
+                  <span className="absolute top-4 left-4 bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm">{post.category}</span>
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center gap-2 text-ink-muted text-[12.5px] font-medium mb-3">
+                    <span>{post.date}</span>
+                    <span>·</span>
+                    <span>{post.readTime}</span>
+                  </div>
+                  <h3 className="font-display font-bold text-[18px] text-ink leading-snug group-hover:text-emerald-700 transition">{post.title}</h3>
+                  <p className="text-ink-muted text-[13.5px] mt-3 leading-relaxed line-clamp-3">{post.excerpt}</p>
+                </div>
+              </div>
+              <div className="p-6 pt-0 border-t border-slate-50/50 mt-4 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-emerald-50 border border-slate-200 overflow-hidden relative">
+                  <img src={post.avatar} alt={post.author} className="w-full h-full object-cover" />
+                </div>
+                <span className="text-[12.5px] font-bold text-ink">{post.author}</span>
+                <span className="ml-auto text-emerald-700 text-xs font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  Read article <I.ArrowRight width={12} height={12} />
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export function BlogPost() {
+  const { id } = useParams<{ id: string }>();
+  const post = BLOG_POSTS.find(p => p.id === id) || BLOG_POSTS[0];
+
+  return (
+    <main className="relative overflow-hidden bg-gradient-to-br from-canvas via-[#EDF5DE] to-[#E5EED1] pb-24 min-h-[70vh]">
+      <Glow className="-top-44 right-[-100px] opacity-60" />
+      <Dots className="inset-0 opacity-60" />
+
+      <div className="max-w-3xl mx-auto px-6 md:px-8 pt-16 md:pt-20 relative z-10 text-left">
+        <div className="mb-6">
+          <Link to="/blog" className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Blog
+          </Link>
+        </div>
+
+        <div className="mb-8">
+          <span className="inline-flex items-center bg-emerald-50 border border-mint-300 rounded-full px-3 py-1 text-[11.5px] font-bold text-emerald-800 uppercase tracking-wider mb-4">
+            {post.category}
+          </span>
+          <h1 className="font-display text-[32px] md:text-[44px] font-bold leading-[1.12] text-ink">
+            {post.title}
+          </h1>
+          <div className="flex items-center gap-3.5 mt-6 pt-4 border-t border-line/60">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 border border-slate-200 overflow-hidden relative">
+              <img src={post.avatar} alt={post.author} className="w-full h-full object-cover" />
+            </div>
+            <div className="leading-tight">
+              <div className="text-[13.5px] font-bold text-ink">{post.author}</div>
+              <div className="text-[11.5px] text-ink-muted mt-0.5">{post.date} · {post.readTime}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="aspect-[16/9] overflow-hidden rounded-[24px] bg-slate-100 border border-line shadow-soft mb-10">
+          <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+        </div>
+
+        {/* Article content */}
+        <article className="prose prose-slate max-w-none text-ink/90 text-[15px] leading-relaxed mb-16"
+          dangerouslySetInnerHTML={{ __html: post.content }} />
+
+        {/* CTA Card */}
+        <div className="bg-emerald-900 text-white rounded-3xl p-8 text-center shadow-lift relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(300px 300px at 50% 0%,rgba(95,201,176,.25),transparent 75%)" }} />
+          <h2 className="font-display text-2xl font-bold text-white relative z-10">Deploy a grounded AI employee on your website</h2>
+          <p className="text-emerald-100 text-sm mt-2 max-w-md mx-auto relative z-10">Get live in 5 minutes with a single script embed. Start your free trial today, no credit card required.</p>
+          <div className="mt-6 flex justify-center gap-4 relative z-10">
+            <Link to="/signup" className="btn bg-white text-emerald-900 hover:bg-[#eafaf3] px-6 py-2.5 font-bold rounded-xl text-sm">Start Free Trial</Link>
+            <Link to="/contact" className="btn border border-white/20 hover:bg-white/10 text-white px-6 py-2.5 font-bold rounded-xl text-sm">Talk to Us</Link>
           </div>
         </div>
       </div>
