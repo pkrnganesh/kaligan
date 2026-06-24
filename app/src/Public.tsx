@@ -190,6 +190,292 @@ function SectionHead({ eyebrow, title, sub }: { eyebrow: string; title: string; 
   );
 }
 
+/* ============================ INTEGRATIONS DIAGRAM ===================== */
+function IntegrationsDiagram() {
+  const [selectedAgentId, setSelectedAgentId] = useState("maya");
+  const [activeSource, setActiveSource] = useState<string | null>(null);
+
+  const agents = {
+    maya: {
+      name: "Maya",
+      role: "Sales & Growth",
+      avatar: "/maya_astronaut.png",
+      color: "border-emerald-500",
+      glowColor: "rgba(16,185,129,0.2)",
+      connected: ["notion", "drive", "hubspot", "slack"],
+    },
+    dexter: {
+      name: "Dexter",
+      role: "Local Services",
+      avatar: "/dexter_astronaut.png",
+      color: "border-blue-500",
+      glowColor: "rgba(59,130,246,0.2)",
+      connected: ["notion", "gmail", "stripe", "slack"],
+    },
+    milli: {
+      name: "Milli",
+      role: "Prospect Scouting",
+      avatar: "/milli_astronaut.png",
+      color: "border-violet-500",
+      glowColor: "rgba(139,92,246,0.2)",
+      connected: ["drive", "gmail", "hubspot", "stripe"],
+    },
+  };
+
+  const integrations = [
+    { id: "notion", name: "Notion", icon: "https://cdn.worldvectorlogo.com/logos/notion-2.svg", type: "source", desc: "Syncs knowledge databases and official product documentation." },
+    { id: "drive", name: "Google Drive", icon: "https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg", type: "source", desc: "Indexes PDF sheets, spec documents, and training guidelines." },
+    { id: "gmail", name: "Gmail", icon: "https://cdn.worldvectorlogo.com/logos/gmail-icon.svg", type: "source", desc: "Ingests client email context and parses history." },
+    { id: "slack", name: "Slack", icon: "https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg", type: "action", desc: "Pushes instant lead alerts to your sales channels." },
+    { id: "hubspot", name: "HubSpot", icon: "https://cdn.worldvectorlogo.com/logos/hubspot.svg", type: "action", desc: "Syncs contact data and scores leads directly in CRM." },
+    { id: "stripe", name: "Stripe", icon: "https://cdn.worldvectorlogo.com/logos/stripe-4.svg", type: "action", desc: "Tracks subscription checkout status and intent." },
+  ];
+
+  const currentAgent = agents[selectedAgentId as keyof typeof agents];
+
+  return (
+    <div className="w-full max-w-4xl mx-auto mt-4 relative bg-canvas border border-line/80 rounded-[32px] p-6 md:p-8 overflow-hidden shadow-soft">
+      {/* Background Glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-surface via-canvas to-emerald-50/5 pointer-events-none -z-10" />
+      
+      {/* Top Header & Agent Selector */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10 pb-6 border-b border-line/50">
+        <div className="text-left">
+          <h4 className="font-display font-bold text-lg text-ink">Unified Knowledge & Workflow Automation</h4>
+          <p className="text-ink-muted text-[13px] mt-0.5">Toggle an AI teammate to see how they ingest knowledge and execute actions.</p>
+        </div>
+        
+        {/* Agent Pills */}
+        <div className="flex bg-surface-2 p-1.5 rounded-full border border-line shrink-0">
+          {Object.entries(agents).map(([id, ag]) => (
+            <button
+              key={id}
+              onClick={() => {
+                setSelectedAgentId(id);
+                setActiveSource(null);
+              }}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                selectedAgentId === id
+                  ? "bg-white text-ink shadow-sm border border-line"
+                  : "text-ink-muted hover:text-ink"
+              }`}
+            >
+              {ag.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Diagram Area */}
+      <div className="relative w-full h-[400px] select-none">
+        {/* SVG connection lines backdrop */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Paths connecting sources (left side) to center */}
+          {integrations.filter(item => item.type === "source").map((item, idx) => {
+            const startY = 20 + idx * 30; // 20, 50, 80
+            const isActive = currentAgent.connected.includes(item.id);
+            const isHovered = activeSource === item.id;
+            
+            return (
+              <g key={item.id}>
+                {/* Underlay glow on hover/active */}
+                <path
+                  d={`M 18 ${startY} Q 34 ${startY * 0.4 + 30}, 50 50`}
+                  fill="none"
+                  stroke={isHovered ? "#10b981" : isActive ? "#34d399" : "#e2e8f0"}
+                  strokeWidth={isHovered ? "4" : isActive ? "2" : "1.2"}
+                  className="transition-all duration-300"
+                  opacity={isHovered ? 0.4 : isActive ? 0.2 : 0.4}
+                />
+                {/* Pulsing light flow line */}
+                {isActive && (
+                  <path
+                    d={`M 18 ${startY} Q 34 ${startY * 0.4 + 30}, 50 50`}
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth={isHovered ? "2.5" : "1.8"}
+                    className="animate-flow-line transition-all duration-300"
+                    opacity={isHovered ? 1 : 0.6}
+                  />
+                )}
+              </g>
+            );
+          })}
+
+          {/* Paths connecting center to actions (right side) */}
+          {integrations.filter(item => item.type === "action").map((item, idx) => {
+            const startY = 20 + idx * 30; // 20, 50, 80
+            const isActive = currentAgent.connected.includes(item.id);
+            const isHovered = activeSource === item.id;
+            
+            return (
+              <g key={item.id}>
+                {/* Underlay glow on hover/active */}
+                <path
+                  d={`M 82 ${startY} Q 66 ${startY * 0.4 + 30}, 50 50`}
+                  fill="none"
+                  stroke={isHovered ? "#10b981" : isActive ? "#34d399" : "#e2e8f0"}
+                  strokeWidth={isHovered ? "4" : isActive ? "2" : "1.2"}
+                  className="transition-all duration-300"
+                  opacity={isHovered ? 0.4 : isActive ? 0.2 : 0.4}
+                />
+                {/* Pulsing light flow line */}
+                {isActive && (
+                  <path
+                    d={`M 82 ${startY} Q 66 ${startY * 0.4 + 30}, 50 50`}
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth={isHovered ? "2.5" : "1.8"}
+                    className="animate-flow-line-reverse transition-all duration-300"
+                    opacity={isHovered ? 1 : 0.6}
+                  />
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* LEFT COLUMN: Sources */}
+        <div className="absolute left-0 top-0 bottom-0 w-[26%] flex flex-col justify-between py-2 z-10">
+          {integrations.filter(item => item.type === "source").map((item) => {
+            const isConnected = currentAgent.connected.includes(item.id);
+            const isHovered = activeSource === item.id;
+            
+            return (
+              <div
+                key={item.id}
+                onMouseEnter={() => isConnected && setActiveSource(item.id)}
+                onMouseLeave={() => setActiveSource(null)}
+                className={`bg-white border rounded-2xl p-2.5 flex items-center gap-2.5 shadow-sm transition-all duration-300 ${
+                  isConnected 
+                    ? "cursor-pointer hover:shadow-md hover:border-emerald-300 hover:scale-[1.03]" 
+                    : "opacity-40 grayscale pointer-events-none"
+                } ${isHovered ? "border-emerald-500 ring-1 ring-emerald-500/10 scale-[1.03]" : "border-slate-200"}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center p-1.5 shrink-0">
+                  <img src={item.icon} alt={item.name} className="w-full h-full object-contain" />
+                </div>
+                <div className="text-left min-w-0">
+                  <div className="text-[11px] font-bold text-slate-800 truncate">{item.name}</div>
+                  <div className="text-[9.5px] text-emerald-600 font-medium">Knowledge Source</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* CENTER: AI Mind Node */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] flex flex-col items-center justify-center text-center z-20">
+          {/* Outer glowing ring */}
+          <div 
+            className="w-28 h-28 rounded-full border-2 border-line bg-surface/90 flex items-center justify-center p-2 relative shadow-lift transition-all duration-500"
+            style={{
+              borderColor: activeSource ? "#10b981" : "rgba(226,232,240,1)",
+              boxShadow: activeSource 
+                ? "0 10px 25px -5px rgba(16,185,129,0.3), 0 0 16px rgba(16,185,129,0.2)"
+                : "0 10px 25px -5px rgba(0,0,0,0.05)"
+            }}
+          >
+            {/* Pulsing core overlay */}
+            <div className={`absolute inset-0.5 rounded-full bg-gradient-to-br from-emerald-50 to-teal-50/50 opacity-0 transition-opacity duration-300 ${activeSource ? "opacity-100 animate-pulse" : ""}`} />
+            
+            {/* Avatar container */}
+            <div className="w-full h-full rounded-full overflow-hidden border border-line relative z-10 bg-slate-50">
+              <img 
+                src={currentAgent.avatar} 
+                alt={currentAgent.name} 
+                className={`w-full h-full object-cover transition-all duration-500 ${activeSource ? "brightness-95 contrast-105" : ""}`}
+              />
+              
+              {/* Closed eyes processing overlay */}
+              <div 
+                className={`absolute inset-0 bg-emerald-950/20 backdrop-blur-[1px] flex flex-col items-center justify-center transition-all duration-300 ${
+                  activeSource ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                }`}
+              >
+                {/* Glowing closed eyelashes arc */}
+                <svg className="w-10 h-6 text-emerald-400 select-none drop-shadow-[0_0_5px_rgba(52,211,153,0.85)]" viewBox="0 0 40 20" fill="none">
+                  <path d="M 8,12 Q 14,17 20,12" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" />
+                  <path d="M 20,12 Q 26,17 32,12" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" />
+                </svg>
+                {/* Scanning line overlay */}
+                <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent top-0 animate-scan-glow" />
+              </div>
+            </div>
+
+            {/* Glowing active node status dot */}
+            <span className="absolute -bottom-1 right-8 w-3 h-3 rounded-full bg-success border-2 border-white pulse-dot" />
+          </div>
+          
+          {/* Agent status label */}
+          <div className="mt-4">
+            <div className="text-[12.5px] font-bold text-slate-800 leading-tight">{currentAgent.name} — AI Teammate</div>
+            <div className="text-[10px] text-emerald-600 font-semibold mt-0.5 flex items-center justify-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${activeSource ? "bg-emerald-500 animate-ping" : "bg-success"}`} />
+              {activeSource ? "Ingesting Knowledge..." : "Online & Active"}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Actions */}
+        <div className="absolute right-0 top-0 bottom-0 w-[26%] flex flex-col justify-between py-2 z-10">
+          {integrations.filter(item => item.type === "action").map((item) => {
+            const isConnected = currentAgent.connected.includes(item.id);
+            const isHovered = activeSource === item.id;
+            
+            return (
+              <div
+                key={item.id}
+                onMouseEnter={() => isConnected && setActiveSource(item.id)}
+                onMouseLeave={() => setActiveSource(null)}
+                className={`bg-white border rounded-2xl p-2.5 flex items-center gap-2.5 shadow-sm transition-all duration-300 ${
+                  isConnected 
+                    ? "cursor-pointer hover:shadow-md hover:border-emerald-300 hover:scale-[1.03]" 
+                    : "opacity-40 grayscale pointer-events-none"
+                } ${isHovered ? "border-emerald-500 ring-1 ring-emerald-500/10 scale-[1.03]" : "border-slate-200"}`}
+              >
+                <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center p-1.5 shrink-0">
+                  <img src={item.icon} alt={item.name} className="w-full h-full object-contain" />
+                </div>
+                <div className="text-left min-w-0">
+                  <div className="text-[11px] font-bold text-slate-800 truncate">{item.name}</div>
+                  <div className="text-[9.5px] text-teal-600 font-medium">Workflow Action</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Description / Tooltip Drawer Box */}
+      <div className="mt-8 bg-surface border border-line/60 rounded-2xl p-4 text-left shadow-soft min-h-[72px] flex items-center justify-center transition-all duration-300">
+        {activeSource ? (
+          <div className="flex items-start gap-3 fadeup">
+            <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center p-1.5 shrink-0">
+              <img src={integrations.find(i => i.id === activeSource)?.icon} alt="" className="w-full h-full object-contain" />
+            </span>
+            <div>
+              <div className="text-[11px] font-extrabold text-slate-800 uppercase tracking-wide">
+                Active Link: {integrations.find(i => i.id === activeSource)?.name}
+              </div>
+              <p className="text-[12.5px] text-ink-muted leading-relaxed mt-0.5">
+                {integrations.find(i => i.id === activeSource)?.desc}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="text-[12px] text-slate-400 font-medium text-center flex items-center gap-2">
+            <svg className="w-4 h-4 text-slate-300 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+            </svg>
+            Hover over any active integration node to visual trace the data flow.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ============================ MARKETING SHELL ===================== */
 export function MarketingShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -229,6 +515,29 @@ export function MarketingShell() {
           display: flex;
           width: max-content;
           animation: marquee 30s linear infinite;
+        }
+        @keyframes flow-line {
+          0% {
+            stroke-dashoffset: 120;
+          }
+          100% {
+            stroke-dashoffset: 0;
+          }
+        }
+        .animate-flow-line {
+          stroke-dasharray: 6, 12;
+          animation: flow-line 5s linear infinite;
+        }
+        .animate-flow-line-reverse {
+          stroke-dasharray: 6, 12;
+          animation: flow-line 5s linear infinite reverse;
+        }
+        @keyframes scan-glow {
+          0%, 100% { transform: translateY(0); opacity: 0.3; }
+          50% { transform: translateY(112px); opacity: 0.8; }
+        }
+        .animate-scan-glow {
+          animation: scan-glow 2.5s ease-in-out infinite;
         }
       `}</style>
       <header className="sticky top-0 z-30 backdrop-blur-md bg-canvas/80 border-b border-line/75">
@@ -831,11 +1140,11 @@ function InteractiveDemo() {
                       return (
                         <div key={idx} className={`max-w-[90%] flex gap-2 ${isAgent ? "items-start text-left" : "items-start ml-auto flex-row-reverse text-right"}`}>
                           {isAgent ? (
-                            <div className="w-5.5 h-5.5 rounded-full overflow-hidden bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 shrink-0 mt-1 shadow-sm">
+                            <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 shrink-0 mt-1 shadow-sm">
                               <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
                             </div>
                           ) : (
-                            <div className="w-5.5 h-5.5 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 mt-1 flex items-center justify-center text-[9px] font-bold text-slate-500 shadow-sm font-display">
+                            <div className="w-6 h-6 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 mt-1 flex items-center justify-center text-[9px] font-bold text-slate-500 shadow-sm font-display">
                               You
                             </div>
                           )}
@@ -859,7 +1168,7 @@ function InteractiveDemo() {
 
                     {loadingReply && (
                       <div className="max-w-[90%] flex gap-2 items-start text-left">
-                        <div className="w-5.5 h-5.5 rounded-full overflow-hidden bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 shrink-0 mt-1 shadow-sm">
+                        <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-300 shrink-0 mt-1 shadow-sm">
                           <img src={selectedEmployee.avatar} alt={selectedEmployee.name} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex flex-col">
@@ -932,11 +1241,11 @@ function InteractiveDemo() {
               aria-label="Toggle chat widget"
             >
               {isOpen ? (
-                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               ) : (
-                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               )}
@@ -960,7 +1269,7 @@ export function Home() {
           <div className="fadeup inline-flex justify-center"><Eyebrow>Introducing AI Employees</Eyebrow></div>
           <h1 className="font-display text-[46px] md:text-[68px] font-bold leading-[1.03] mt-5 fadeup text-ink">
             Hire AI Employees That <br className="hidden md:inline" />
-            <span className="text-emerald-700 font-extrabold relative inline-block">Work Around the Clock.<span className="absolute bottom-2 left-0 w-full h-[8px] bg-teal-200/50 -z-10 rounded-full" /></span>
+            <span className="text-emerald-700 font-extrabold">Work Around the Clock.</span>
           </h1>
           <p className="text-ink-muted text-lg md:text-xl leading-relaxed mt-6 max-w-2xl mx-auto fadeup" style={{ animationDelay: ".1s" }}>
             Search, hire, and deploy pre-trained AI employees to capture leads, answer customer questions, and sync immediately with HubSpot, Slack, and Zapier.
@@ -1233,25 +1542,12 @@ export function Home() {
       </section>
 
       {/* FLOATING INTEGRATIONS LOGO GRID */}
-      <section className="max-w-6xl mx-auto px-6 md:px-8 py-16 relative z-10 border-t border-slate-100">
+      <section className="max-w-6xl mx-auto px-6 md:px-8 py-16 relative z-10 border-t border-slate-100 text-center">
         <div className="text-center max-w-xl mx-auto mb-10">
-          <h3 className="text-xs uppercase font-extrabold tracking-widest text-slate-400">1000+ Integrations Supported</h3>
-          <p className="text-ink-muted text-sm mt-1">Connect your AI employees with the software your team already uses.</p>
+          <h3 className="text-xs uppercase font-extrabold tracking-widest text-slate-400">Unified Knowledge Ingestion & Actions</h3>
+          <p className="text-ink-muted text-sm mt-1">Connect your AI employees with the tools your team already uses and see data flow in real time.</p>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 items-center justify-items-center">
-          {[
-            { name: "HubSpot", icon: "https://cdn.worldvectorlogo.com/logos/hubspot.svg" },
-            { name: "Slack", icon: "https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg" },
-            { name: "Zapier", icon: "https://cdn.worldvectorlogo.com/logos/zapier.svg" },
-            { name: "Salesforce", icon: "https://cdn.worldvectorlogo.com/logos/salesforce-2.svg" },
-            { name: "Stripe", icon: "https://cdn.worldvectorlogo.com/logos/stripe-4.svg" },
-            { name: "Shopify", icon: "https://cdn.worldvectorlogo.com/logos/shopify.svg" }
-          ].map((logo) => (
-            <div key={logo.name} className="bg-white/80 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-center h-16 w-full shadow-soft hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 group">
-              <img src={logo.icon} alt={logo.name} className="h-7 w-auto object-contain grayscale group-hover:grayscale-0 opacity-70 group-hover:opacity-100 transition-all duration-200" />
-            </div>
-          ))}
-        </div>
+        <IntegrationsDiagram />
       </section>
 
       {/* PRICING PREVIEW */}
