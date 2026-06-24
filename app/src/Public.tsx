@@ -628,6 +628,7 @@ const AI_EMPLOYEES = [
     borderColor: "border-emerald-200",
     avatarBg: "bg-emerald-100 text-emerald-800",
     badgeColor: "bg-emerald-100 text-emerald-800",
+    active: true,
     greeting: "Hi! I'm Maya, your Sales Assistant. I help turn website visitors into qualified leads. Want to see how I score leads or try a voice call?",
     suggestions: [
       { q: "💬 How does lead capture work?", text: "How does lead capture work?" },
@@ -648,6 +649,7 @@ const AI_EMPLOYEES = [
     borderColor: "border-blue-200",
     avatarBg: "bg-blue-100 text-blue-800",
     badgeColor: "bg-blue-100 text-blue-800",
+    active: true,
     greeting: "Hello! I'm Dexter. I coordinate house and commercial cleaning services. Ask me about pricing or booking slots!",
     suggestions: [
       { q: "🧹 What services do you offer?", text: "What services do you offer?" },
@@ -668,11 +670,52 @@ const AI_EMPLOYEES = [
     borderColor: "border-violet-200",
     avatarBg: "bg-violet-100 text-violet-800",
     badgeColor: "bg-violet-100 text-violet-800",
+    active: false,
     greeting: "Hello! I'm Milli, representing Apex Digital. I identify prospective client needs. Want to check out our packages?",
     suggestions: [
       { q: "📈 What digital marketing packages do you have?", text: "What marketing packages do you offer?" },
       { q: "⚡ How do I book a strategy session?", text: "How do I book a strategy session?" },
       { q: "💼 Can you route leads to my CRM?", text: "How are leads captured?" }
+    ]
+  },
+  {
+    id: "penn",
+    name: "Penn",
+    title: "Penn — Copywriter",
+    role: "Creative Copywriter",
+    desc: "Autopilot ad copy & landing page drafts.",
+    vertical: "copywriter",
+    avatar: "/penn_astronaut.png",
+    color: "from-amber-600 to-amber-700",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-200",
+    avatarBg: "bg-amber-100 text-amber-800",
+    badgeColor: "bg-amber-100 text-amber-800",
+    active: false,
+    greeting: "Hi there! I'm Penn. I help draft newsletters, blog outlines, and high-converting ad copy. I am coming soon!",
+    suggestions: [
+      { q: "✍ Can you write Facebook ad headlines?", text: "Facebook ads" },
+      { q: "📧 Draft a newsletter template", text: "Newsletter" }
+    ]
+  },
+  {
+    id: "vizzy",
+    name: "Vizzy",
+    title: "Vizzy — Exec Assistant",
+    role: "Executive Assistant",
+    desc: "Call summarization & slack organizer.",
+    vertical: "assistant",
+    avatar: "/vizzy_astronaut.png",
+    color: "from-rose-600 to-rose-700",
+    bgColor: "bg-rose-50",
+    borderColor: "border-rose-200",
+    avatarBg: "bg-rose-100 text-rose-800",
+    badgeColor: "bg-rose-100 text-rose-800",
+    active: false,
+    greeting: "Hello! I'm Vizzy, your virtual assistant. I synthesize meetings, take detailed notes, and post summaries to Slack.",
+    suggestions: [
+      { q: "📅 Can you organize my task board?", text: "Task board" },
+      { q: "📝 Sync meeting summaries to Slack?", text: "Slack sync" }
     ]
   }
 ];
@@ -692,6 +735,9 @@ function InteractiveDemo() {
   const [loadingReply, setLoadingReply] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [capturedLead, setCapturedLead] = useState<any>(null);
+
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
 
   const {
     connectionState,
@@ -789,7 +835,16 @@ function InteractiveDemo() {
     setUrl("");
     setMode("A");
     setCapturedLead(null);
-    startDemo({ vertical: emp.vertical }, emp.greeting);
+    setWaitlistSubmitted(false);
+    setWaitlistEmail("");
+    if (emp.active) {
+      startDemo({ vertical: emp.vertical }, emp.greeting);
+    } else {
+      setDemoId("waitlist");
+      setDemoAgentId(null);
+      setDemoPublicKey(null);
+      setMessages([]);
+    }
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -861,7 +916,16 @@ function InteractiveDemo() {
     setUrl("");
     setMode("A");
     setCapturedLead(null);
-    startDemo({ vertical: selectedEmployee.vertical }, selectedEmployee.greeting);
+    setWaitlistSubmitted(false);
+    setWaitlistEmail("");
+    if (selectedEmployee.active) {
+      startDemo({ vertical: selectedEmployee.vertical }, selectedEmployee.greeting);
+    } else {
+      setDemoId("waitlist");
+      setDemoAgentId(null);
+      setDemoPublicKey(null);
+      setMessages([]);
+    }
   };
 
   return (
@@ -904,10 +968,15 @@ function InteractiveDemo() {
                   >
                     <span className={`w-7 h-7 rounded-lg bg-gradient-to-br ${emp.color} text-white font-bold flex items-center justify-center text-[10.5px] shrink-0 relative shadow-sm overflow-hidden`}>
                       <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
-                      <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-success border border-white pulse-dot" />
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-white ${
+                        emp.active ? "bg-success pulse-dot" : "bg-amber-400"
+                      }`} />
                     </span>
                     <div className="truncate">
-                      <div className="text-[10px] font-bold text-slate-800 leading-tight truncate">{emp.name}</div>
+                      <div className="text-[10px] font-bold text-slate-800 leading-tight truncate flex items-center gap-1">
+                        {emp.name}
+                        {!emp.active && <span className="bg-amber-100 text-amber-800 text-[6.5px] px-1 py-0.5 rounded-md font-extrabold uppercase scale-90 leading-none shrink-0">Soon</span>}
+                      </div>
                       <div className="text-[7.5px] text-slate-400 leading-none truncate mt-0.5">{emp.role.split(" & ")[0]}</div>
                     </div>
                   </button>
@@ -959,11 +1028,11 @@ function InteractiveDemo() {
                   </div>
                   <div>
                     <div className="text-[10px] font-bold font-display leading-tight">{selectedEmployee.name} — AI Teammate</div>
-                    <div className="text-[8px] text-emerald-100/90 leading-none">Online & ready</div>
+                    <div className="text-[8px] text-emerald-100/90 leading-none">{selectedEmployee.active ? "Online & ready" : "Coming soon"}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  {mode === "A" ? (
+                  {selectedEmployee.active && (mode === "A" ? (
                     <button
                       onClick={() => setMode("B")}
                       className="text-[8.5px] font-bold bg-white/10 hover:bg-white/20 border border-white/25 px-2 py-0.5 rounded-full transition-colors flex items-center gap-0.5 text-white focus:outline-none"
@@ -977,7 +1046,7 @@ function InteractiveDemo() {
                     >
                       💬 Back
                     </button>
-                  )}
+                  ))}
                   <button
                     onClick={() => setIsOpen(false)}
                     className="text-white hover:text-emerald-100 transition-colors focus:outline-none"
@@ -1100,7 +1169,7 @@ function InteractiveDemo() {
               )}
 
               {/* Active Chat Conversation Log */}
-              {demoId && !ingesting && mode === "A" && connectionState === ConnectionState.DISCONNECTED && (
+              {selectedEmployee.active && demoId && !ingesting && mode === "A" && connectionState === ConnectionState.DISCONNECTED && (
                 <div className="flex-1 flex flex-col overflow-hidden bg-surface">
                   {/* Context subheader */}
                   <div className="bg-surface-2/80 px-2.5 py-1 border-b border-line flex items-center justify-between text-[8.5px] shrink-0 select-none">
@@ -1232,6 +1301,68 @@ function InteractiveDemo() {
                   </form>
                 </div>
               )}
+
+              {!selectedEmployee.active && (
+                <div className="flex-1 flex flex-col justify-between p-4 bg-gradient-to-b from-white via-emerald-50/10 to-emerald-50/30 text-left">
+                  <div className="space-y-3.5 my-auto">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-soft">
+                      <svg className="w-5 h-5 text-amber-600 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-display font-extrabold text-[13.5px] text-ink leading-tight">
+                        {selectedEmployee.name} is coming soon!
+                      </h4>
+                      <p className="text-ink-muted text-[10.5px] leading-relaxed mt-1.5">
+                        {selectedEmployee.desc} We are currently training this AI employee. Leave your email to join the waitlist and get notified when {selectedEmployee.name} goes live.
+                      </p>
+                    </div>
+
+                    {waitlistSubmitted ? (
+                      <div className="bg-emerald-50/90 border border-mint-200 text-emerald-800 rounded-xl p-3 flex items-center gap-2 animate-fadeup select-none">
+                        <svg className="w-4 h-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <div className="text-left">
+                          <div className="text-[10px] font-bold">Successfully Registered!</div>
+                          <div className="text-[8.5px] text-emerald-700/80 mt-0.5">You have been added to the priority waitlist.</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          if (!waitlistEmail.trim()) return;
+                          setWaitlistSubmitted(true);
+                        }}
+                        className="space-y-2 pt-1"
+                      >
+                        <div className="relative">
+                          <input
+                            required
+                            type="email"
+                            placeholder="name@company.com"
+                            value={waitlistEmail}
+                            onChange={(e) => setWaitlistEmail(e.target.value)}
+                            className="w-full text-[11px] text-ink bg-white border border-line rounded-xl px-3 py-2 outline-none transition focus:border-emerald-500 shadow-sm"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          className="btn btn-primary w-full !py-2 text-[10.5px] font-bold rounded-xl shadow-sm hover:shadow transition-all"
+                        >
+                          Join Waitlist
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                  
+                  <div className="text-[8.5px] text-ink-muted/80 text-center border-t border-line/60 pt-2 select-none">
+                    🔒 Zero spam. Unsubscribe at any time.
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Circular Floating Launcher Button */}
@@ -1259,6 +1390,9 @@ function InteractiveDemo() {
 }
 
 export function Home() {
+  const [cardWaitlistEmail, setCardWaitlistEmail] = useState<{[key: string]: string}>({});
+  const [cardWaitlistSubmitted, setCardWaitlistSubmitted] = useState<{[key: string]: boolean}>({});
+
   return (
     <main className="relative overflow-hidden bg-gradient-to-br from-canvas via-[#EDF5DE] to-[#E5EED1]">
       {/* HERO SECTION */}
@@ -1350,11 +1484,15 @@ export function Home() {
           title="Ready-to-Hire pre-trained employees" 
           sub="Choose from our standard roster of specialized AI Workers. They sync with integrations and load in 5 minutes." 
         />
-        <div className="grid md:grid-cols-3 gap-6 mt-12">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
           {AI_EMPLOYEES.map((emp, i) => (
             <div 
               key={emp.id} 
-              className="card p-6 flex flex-col justify-between border border-line bg-surface relative overflow-hidden group hover:border-emerald-600/40 hover:shadow-lift transition-all duration-300 rounded-[24px] text-left"
+              className={`card p-6 flex flex-col justify-between border relative overflow-hidden group hover:shadow-lift transition-all duration-300 rounded-[24px] text-left ${
+                emp.active 
+                  ? "border-line bg-surface hover:border-emerald-600/40" 
+                  : "border-line/70 bg-surface-2/40 hover:border-amber-500/30 opacity-95"
+              }`}
               style={{ animationDelay: `${i * 0.08}s` }}
             >
               <div>
@@ -1362,9 +1500,11 @@ export function Home() {
                   <div className="w-16 h-16 rounded-[18px] bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 overflow-hidden relative shadow-sm shrink-0">
                     <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform" />
                   </div>
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${emp.badgeColor}`}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                    Active Roster
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                    emp.active ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${emp.active ? "bg-success animate-pulse" : "bg-amber-500"}`} />
+                    {emp.active ? "Active Roster" : "Coming Soon"}
                   </span>
                 </div>
                 
@@ -1386,7 +1526,11 @@ export function Home() {
                       ? ["Lead Qualification", "Auto-Scoring", "CRM sync", "Meeting Booking"] 
                       : emp.id === "dexter"
                       ? ["Cleaner Dispatch", "Slot Booking", "FAQ Answering", "Google Cal Sync"]
-                      : ["Agency Scout", "Package Details", "Strategy Booking", "Client Routing"]
+                      : emp.id === "milli"
+                      ? ["Agency Scout", "Package Details", "Strategy Booking", "Client Routing"]
+                      : emp.id === "penn"
+                      ? ["Ad Copywriting", "Landing Pages", "Email Drafting", "SEO Optimization"]
+                      : ["Call Transcripts", "Slack Alerts", "Action Summary", "Calendar Sync"]
                     ).map(skill => (
                       <span key={skill} className="bg-emerald-50/50 text-emerald-800 text-[10.5px] font-semibold border border-mint-100 rounded-lg px-2 py-0.5">
                         {skill}
@@ -1405,7 +1549,11 @@ export function Home() {
                         ? ["HubSpot", "Slack", "Zapier"] 
                         : emp.id === "dexter"
                         ? ["Calendar", "Stripe", "WhatsApp"]
-                        : ["Salesforce", "Calendly", "Notion"]
+                        : emp.id === "milli"
+                        ? ["Salesforce", "Calendly", "Notion"]
+                        : emp.id === "penn"
+                        ? ["WordPress", "Substack", "Medium"]
+                        : ["Google Meet", "Zoom", "Slack"]
                       ).map(tag => (
                         <span key={tag} className="text-[10px] text-slate-500 font-semibold bg-slate-50 border border-slate-100 rounded px-1.5 py-0.5 leading-none">
                           {tag}
@@ -1415,14 +1563,49 @@ export function Home() {
                   </div>
                 </div>
                 
-                <Link 
-                  to="/signup" 
-                  className={`btn w-full !py-2.5 rounded-xl font-bold text-[12px] flex items-center justify-center gap-1.5 transition-all group-hover:translate-y-[-1px] ${
-                    emp.id === 'maya' ? 'btn-primary' : 'btn-ghost border border-slate-200 bg-white hover:bg-slate-50'
-                  }`}
-                >
-                  Hire {emp.name} <I.ArrowRight width={13} height={13} />
-                </Link>
+                {emp.active ? (
+                  <Link 
+                    to="/signup" 
+                    className={`btn w-full !py-2.5 rounded-xl font-bold text-[12px] flex items-center justify-center gap-1.5 transition-all group-hover:translate-y-[-1px] ${
+                      emp.id === 'maya' ? 'btn-primary' : 'btn-ghost border border-slate-200 bg-white hover:bg-slate-50 hover:border-emerald-300'
+                    }`}
+                  >
+                    Hire {emp.name} <I.ArrowRight width={13} height={13} />
+                  </Link>
+                ) : (
+                  <div className="w-full pt-1">
+                    {cardWaitlistSubmitted[emp.id] ? (
+                      <div className="bg-emerald-50 border border-mint-200 text-emerald-800 rounded-xl py-2 px-3 text-center text-[11px] font-bold animate-fadeup select-none">
+                        ✓ Added to Waitlist!
+                      </div>
+                    ) : (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const email = cardWaitlistEmail[emp.id] || "";
+                          if (!email.trim()) return;
+                          setCardWaitlistSubmitted(prev => ({ ...prev, [emp.id]: true }));
+                        }}
+                        className="flex gap-2"
+                      >
+                        <input
+                          required
+                          type="email"
+                          placeholder="Enter email to join waitlist"
+                          value={cardWaitlistEmail[emp.id] || ""}
+                          onChange={(e) => setCardWaitlistEmail(prev => ({ ...prev, [emp.id]: e.target.value }))}
+                          className="w-full text-[10.5px] text-ink bg-white border border-line rounded-xl px-2.5 py-1.5 outline-none transition focus:border-amber-400 shadow-sm"
+                        />
+                        <button
+                          type="submit"
+                          className="btn btn-primary !py-1.5 !px-3.5 text-[11.5px] rounded-xl font-bold shrink-0 bg-amber-500 hover:bg-amber-600 border-none text-white shadow-sm"
+                        >
+                          Join
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -1439,32 +1622,64 @@ export function Home() {
         <div className="grid md:grid-cols-3 gap-6 mt-12">
           {/* Bento Item 1: Grounded Chat & Lead Ingestion */}
           <div className="card p-6 md:col-span-2 flex flex-col justify-between border border-line bg-surface relative overflow-hidden group hover:border-emerald-600/40 transition duration-300 rounded-[24px] text-left">
-            <div>
-              <div className="flex items-center gap-2.5 mb-3">
-                <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center shadow-sm">
-                  <I.Sparkle width={20} height={20} />
-                </span>
-                <h3 className="font-display font-bold text-lg text-ink">Grounded Chat & Auto Lead Capture</h3>
-              </div>
-              <p className="text-ink-muted text-[14.5px] leading-relaxed max-w-lg">
-                Grounded strictly in your docs, files, and website text. If it doesn't know the answer, it collects visitor details and scores them as Hot, Warm, or Cold based on buying intent signals.
-              </p>
-            </div>
-            
-            <div className="mt-8">
-              <div className="text-[10px] font-bold text-ink-muted/80 uppercase tracking-wider mb-2 text-left">Grounded Data Source Sync</div>
-              <div className="flex flex-wrap gap-2.5">
-                {[
-                  { name: "📄 Services_pricing.pdf", size: "1.2 MB" },
-                  { name: "❓ Pricing FAQ Entries", size: "24 articles" },
-                  { name: "🔗 website_home.com", size: "12 pages" }
-                ].map((c) => (
-                  <span key={c.name} className="inline-flex items-center gap-2 bg-white border border-line rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold text-ink shadow-sm">
-                    <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                    {c.name}
-                    <span className="text-[10px] text-ink-muted font-normal">({c.size})</span>
+            <div className="grid md:grid-cols-[1.1fr_1fr] gap-6 items-center">
+              <div>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 grid place-items-center shadow-sm">
+                    <I.Sparkle width={20} height={20} />
                   </span>
-                ))}
+                  <h3 className="font-display font-bold text-lg text-ink">Grounded Chat & Lead Capture</h3>
+                </div>
+                <p className="text-ink-muted text-[14px] leading-relaxed">
+                  Grounded strictly in your docs, files, and website text. If it doesn't know the answer, it collects visitor details and scores them as Hot, Warm, or Cold based on buying intent signals.
+                </p>
+                <div className="mt-4 space-y-2 text-[12.5px] text-ink-muted">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-600 font-bold">✓</span> Grounded accuracy checks (99.8%)
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-600 font-bold">✓</span> Automatic sync updates in 5 mins
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3 shadow-inner relative overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-200/60 pb-2 mb-1">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Grounding Knowledge Bases</span>
+                  <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-emerald-700 bg-emerald-100/70 rounded-full px-2 py-0.5 border border-emerald-200/30">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                    Auto-Synced
+                  </span>
+                </div>
+                
+                <div className="space-y-2">
+                  {[
+                    { name: "services_pricing.pdf", type: "pdf", size: "1.2 MB", progress: "100%", status: "Synced" },
+                    { name: "pricing_faq_entries", type: "faq", size: "24 articles", progress: "100%", status: "Synced" },
+                    { name: "website_home_crawl", type: "web", size: "12 pages", progress: "100%", status: "Synced" }
+                  ].map((f) => (
+                    <div key={f.name} className="flex items-center justify-between bg-white border border-slate-200/60 rounded-xl p-2.5 shadow-sm hover:border-emerald-300 transition-all duration-300">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                          f.type === 'pdf' ? 'bg-red-50 text-red-600 border border-red-100' :
+                          f.type === 'faq' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                          'bg-blue-50 text-blue-600 border border-blue-100'
+                        }`}>
+                          {f.type === 'pdf' ? '📄' : f.type === 'faq' ? '❓' : '🔗'}
+                        </span>
+                        <div className="text-left min-w-0">
+                          <div className="text-[11px] font-bold text-slate-800 truncate">{f.name}</div>
+                          <div className="text-[9px] text-slate-400 font-medium leading-none mt-0.5">{f.size} · {f.progress} Sync</div>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 bg-emerald-50 border border-mint-200 text-emerald-700 text-[9.5px] font-bold px-2 py-0.5 rounded-lg select-none">
+                        ✓ {f.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="absolute -bottom-6 -right-6 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
               </div>
             </div>
           </div>
@@ -1479,25 +1694,53 @@ export function Home() {
                 <span className="text-[9px] font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full tracking-wide">PHONE & WEB</span>
               </div>
               <h3 className="font-display font-bold text-lg text-ink">Speech Voice Agents</h3>
-              <p className="text-ink-muted text-[14.5px] mt-2.5 leading-relaxed">
+              <p className="text-ink-muted text-[14px] mt-2.5 leading-relaxed">
                 Giving voice to the AI employees. Let site visitors call them directly over WebRTC, or buy dedicated phone lines to receive client calls automatically.
               </p>
             </div>
             
-            <div className="mt-6 bg-emerald-950 text-white rounded-xl p-3 flex items-center justify-between border border-emerald-800/40 shadow-inner">
-              <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-emerald-900 grid place-items-center text-emerald-300">
-                  <I.Phone width={14} height={14} fill="currentColor" />
-                </span>
-                <div className="text-left">
-                  <div className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Voice Agent Number</div>
-                  <div className="text-[12.5px] font-semibold text-white font-mono leading-none mt-0.5">+1 (800) KALI-GAN</div>
+            <div className="mt-6 bg-gradient-to-br from-white to-emerald-50/10 rounded-2xl p-4 border border-slate-200 shadow-soft relative overflow-hidden flex flex-col justify-between h-[155px]">
+              {/* Background glowing line */}
+              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/[0.02] to-transparent pointer-events-none -z-10" />
+              
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2 shrink-0 select-none">
+                <div className="flex items-center gap-2">
+                  <div className="relative w-6 h-6 rounded-full bg-emerald-50 border border-emerald-200/50 flex items-center justify-center">
+                    <I.Phone width={10} height={10} className="text-emerald-600" fill="currentColor" />
+                    <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  </div>
+                  <div className="text-left leading-none">
+                    <span className="text-[9.5px] font-bold text-slate-800 block">Maya Voice Agent</span>
+                    <span className="text-[7.5px] text-emerald-600 mt-0.5 font-bold font-mono block">Line Active · 00:42</span>
+                  </div>
                 </div>
+                <span className="text-[8.5px] text-slate-600 font-bold font-mono tracking-wider bg-slate-50 px-2.5 py-0.5 border border-slate-200/60 rounded-md">
+                  +1 (800) KALI-GAN
+                </span>
               </div>
-              <span className="flex items-center gap-1 bg-emerald-900 border border-emerald-700 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-ping" />
-                Live
-              </span>
+
+              {/* Dynamic Sound Equalizer Graph Bars */}
+              <div className="flex items-end justify-center gap-1.5 h-10 my-auto shrink-0 select-none">
+                {[0.4, 0.85, 0.6, 0.95, 0.45, 0.7, 0.35, 0.8, 0.5, 0.9, 0.6, 0.35, 0.75, 0.5, 0.85, 0.4].map((delay, idx) => (
+                  <span 
+                    key={idx} 
+                    className="w-1 bg-gradient-to-t from-emerald-500 to-teal-400 rounded-full animate-[eq_0.8s_infinite_ease-in-out]" 
+                    style={{ 
+                      height: '8px',
+                      animationDelay: `${delay}s`,
+                      animationDuration: `${0.6 + delay * 0.4}s`
+                    }} 
+                  />
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between border-t border-slate-100 pt-2 shrink-0 text-[8.5px] text-slate-500 select-none">
+                <span>Inbound stream: <b className="text-slate-700 font-semibold">WebRTC</b></span>
+                <span className="text-emerald-600 font-bold flex items-center gap-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  99.2% Audio Quality
+                </span>
+              </div>
             </div>
           </div>
 
@@ -1511,7 +1754,7 @@ export function Home() {
                   </span>
                   <h3 className="font-display font-bold text-lg text-ink">Built-in Workspace Dashboard</h3>
                 </div>
-                <p className="text-ink-muted text-[14.5px] leading-relaxed">
+                <p className="text-ink-muted text-[14px] leading-relaxed">
                   Every captured lead is stored inside a highly detailed, local dashboard. Browse conversational histories, analyze lead buying intent scores, and sync contacts seamlessly with third-party integrations.
                 </p>
                 <div className="mt-4 flex gap-4 text-[13px] text-ink-muted">
@@ -1520,20 +1763,79 @@ export function Home() {
                 </div>
               </div>
 
-              <div className="bg-white border border-line rounded-xl p-3 flex flex-col justify-between shadow-soft">
-                <div className="flex justify-between items-start">
-                  <div className="text-left">
-                    <div className="font-bold text-[13px] text-ink">Sarah Jenkins</div>
-                    <div className="text-[11px] text-ink-muted">sarah@acme.com · acme.com</div>
+              <div className="border border-slate-200/80 bg-slate-50 p-2.5 rounded-2xl shadow-inner relative overflow-hidden max-w-xl mx-auto w-full">
+                <div className="grid grid-cols-[130px_1fr] bg-white border border-slate-200/60 rounded-xl h-[185px] shadow-sm overflow-hidden select-none">
+                  
+                  {/* Left Column: Recent Leads Feed */}
+                  <div className="border-r border-slate-200/60 bg-slate-50/50 flex flex-col p-2 gap-1.5">
+                    <span className="text-[7.5px] font-extrabold text-slate-400 uppercase tracking-wider mb-0.5 text-left leading-none">Inbox Leads</span>
+                    
+                    {[
+                      { name: "Sarah Jenkins", score: "92", active: true, badge: "Hot" },
+                      { name: "David Miller", score: "45", active: false, badge: "Warm" },
+                      { name: "Kevin Zhang", score: "15", active: false, badge: "Cold" }
+                    ].map((lead) => (
+                      <div 
+                        key={lead.name}
+                        className={`p-1.5 rounded-lg border text-left transition-all leading-tight ${
+                          lead.active 
+                            ? "bg-white border-emerald-500 shadow-sm ring-1 ring-emerald-500/10" 
+                            : "bg-transparent border-transparent opacity-75 hover:bg-slate-100/60"
+                        }`}
+                      >
+                        <div className="text-[9.5px] font-bold text-slate-800 truncate">{lead.name}</div>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-[7px] text-slate-400 font-medium">Score: {lead.score}</span>
+                          <span className={`text-[6.5px] font-extrabold px-1 rounded-sm uppercase ${
+                            lead.badge === 'Hot' ? 'bg-red-50 text-red-600 border border-red-100' :
+                            lead.badge === 'Warm' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                            'bg-slate-100 text-slate-500 border border-slate-200'
+                          }`}>
+                            {lead.badge}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-red-100">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
-                    Hot Lead (Score: 92)
-                  </span>
-                </div>
-                <div className="mt-3 pt-2.5 border-t border-line/60 flex justify-between items-center text-[10.5px]">
-                  <span className="text-ink-muted">Intent: <b className="text-ink font-semibold">Demo Request</b></span>
-                  <span className="text-ink-muted">Captured via: <b className="text-ink font-semibold">Maya (Chat)</b></span>
+
+                  {/* Right Column: Selected Lead Details & Transcript */}
+                  <div className="flex flex-col justify-between p-2.5 text-left bg-white min-w-0">
+                    <div>
+                      {/* Active Lead Header */}
+                      <div className="flex justify-between items-start border-b border-slate-100 pb-1.5 mb-1.5 min-w-0">
+                        <div className="min-w-0">
+                          <div className="font-extrabold text-[10.5px] text-slate-800 leading-none truncate">Sarah Jenkins</div>
+                          <div className="text-[8px] text-slate-400 leading-none mt-0.5 truncate">sarah@acme.com · acme.com</div>
+                        </div>
+                        <span className="bg-emerald-50 border border-mint-200 text-emerald-800 text-[8px] font-bold px-1.5 py-0.5 rounded leading-none shrink-0">
+                          HubSpot Synced
+                        </span>
+                      </div>
+
+                      {/* Small conversation transcript */}
+                      <div className="space-y-1.5 max-h-[85px] overflow-y-auto pr-1">
+                        <div className="bg-emerald-50/50 border border-mint-100 rounded-lg p-1.5 text-[9px] leading-relaxed text-left text-slate-700">
+                          <span className="font-extrabold text-emerald-800 block text-[7px] uppercase tracking-wider mb-0.5">Maya (AI Helper)</span>
+                          Great, I can book that onboarding session for you. What is your email to send the details?
+                        </div>
+                        <div className="bg-slate-50 border border-slate-200/50 rounded-lg p-1.5 text-[9px] leading-relaxed text-left text-slate-700">
+                          <span className="font-extrabold text-slate-500 block text-[7px] uppercase tracking-wider mb-0.5">Sarah Jenkins</span>
+                          Sure, it is sarah@acme.com. Let's schedule it for 2:00 PM tomorrow.
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Automatic entity extraction tags parsed */}
+                    <div className="border-t border-slate-100 pt-1.5 mt-1.5 flex flex-wrap gap-1 items-center shrink-0">
+                      <span className="text-[7.5px] font-bold text-slate-400 uppercase tracking-wider mr-1">Parsed entities:</span>
+                      {["CEO", "15 Seats", "$10k budget", "Demo booked"].map((tag) => (
+                        <span key={tag} className="text-[7.5px] text-slate-500 font-extrabold bg-slate-50 border border-slate-100 rounded px-1.5 py-0.2 select-none leading-none">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
