@@ -240,7 +240,7 @@ export function MarketingShell() {
           <nav className="hidden md:flex items-center gap-6">
             <NavLink to="/features" className={link}>Product</NavLink>
             <NavLink to="/pricing" className={link}>Pricing</NavLink>
-            <NavLink to="/compare/sintra" className={link}>Compare</NavLink>
+            <NavLink to="/compare/others" className={link}>Compare</NavLink>
             <NavLink to="/blog" className={link}>Blog</NavLink>
           </nav>
           <div className="ml-auto flex items-center gap-3">
@@ -268,7 +268,7 @@ export function MarketingShell() {
             <nav className="py-2 flex flex-col">
               <NavLink to="/features" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Product</NavLink>
               <NavLink to="/pricing" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Pricing</NavLink>
-              <NavLink to="/compare/sintra" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Compare</NavLink>
+              <NavLink to="/compare/others" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Compare</NavLink>
               <NavLink to="/blog" className={mobileLink} onClick={() => setMobileMenuOpen(false)}>Blog</NavLink>
               <div className="p-4 flex flex-col gap-3">
                 <Link to="/login" className="text-center font-semibold py-2 text-sm text-ink hover:text-emerald-700" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
@@ -286,7 +286,7 @@ export function MarketingShell() {
             <p className="text-ink-muted text-[13px] leading-relaxed max-w-[230px]">The AI employee that turns website visitors into qualified leads — over chat and voice.</p>
           </div>
           {[["Product", ["Features", "/features"], ["Pricing", "/pricing"], ["Log in", "/login"]],
-            ["Compare", ["vs AI Marketplaces", "/compare/sintra"], ["vs Voice APIs", "/compare/vapi"], ["vs Legacy Chatbots", "/compare/generic"]],
+            ["Compare", ["vs AI Marketplaces", "/compare/others"], ["vs Voice APIs", "/compare/vapi"], ["vs Legacy Chatbots", "/compare/generic"]],
             ["Company", ["About", "/about"], ["Contact", "/contact"]],
             ["Legal", ["Privacy", "/"], ["Terms", "/"]]].map((col) => (
             <div key={col[0] as string}>
@@ -1977,10 +1977,10 @@ const competitorData: Record<string, {
   features: { name: string; kaligan: boolean | string; competitor: boolean | string; desc: string }[];
   summary: string;
 }> = {
-  sintra: {
-    name: "Sintra.ai & AI Worker Marketplaces",
+  others: {
+    name: "Other AI Marketplaces",
     tagline: "Why dedicated lead-capture AI employees beat prompt-template directories.",
-    desc: "AI worker directories offer generic prompt templates and trigger sequences. They lack live WebRTC web calls, local lead qualification dashboards, and integrated safety-first RAG grounding built directly into your website widgets.",
+    desc: "Other AI marketplaces offer generic prompt templates and trigger sequences. They lack live WebRTC web calls, local lead qualification dashboards, and integrated safety-first RAG grounding built directly into your website widgets.",
     strength: "Broad variety of predefined prompt roles.",
     weakness: "No real-time phone/web voice lines, no unified chat widget, requires external automation tools (Zapier/Make) to route and view captured leads.",
     features: [
@@ -2026,7 +2026,7 @@ const competitorData: Record<string, {
 
 export function Compare() {
   const { competitor } = useParams<{ competitor: string }>();
-  const compId = competitor && competitorData[competitor] ? competitor : "sintra";
+  const compId = competitor && competitorData[competitor] ? competitor : "others";
   const data = competitorData[compId];
 
   return (
@@ -2079,8 +2079,8 @@ export function Compare() {
           <div>
             <div className="text-[11px] font-extrabold uppercase text-emerald-700 tracking-wider">Maya's Take</div>
             <p className="text-[13px] text-ink-muted leading-relaxed mt-0.5">
-              "{data.name.includes("Sintra.ai") 
-                ? "Sintra has a huge library of prompt templates, but they cannot answer browser voice calls, host inline chat widgets, or grade qualified contacts automatically in a local dashboard. KaliGanAI is built for active leads execution." 
+              "{data.name.includes("Other") 
+                ? "Other AI marketplaces have a huge library of prompt templates, but they cannot answer browser voice calls, host inline chat widgets, or grade qualified contacts automatically in a local dashboard. KaliGanAI is built for active leads execution." 
                 : "Why build custom integrations or manage complex automation tools when you can get a single pre-trained employee live in 5 minutes?"}"
             </p>
           </div>
