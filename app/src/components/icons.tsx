@@ -39,3 +39,37 @@ export const LogOut = (p: SVGProps<SVGSVGElement>) => (
     <line x1="21" y1="12" x2="9" y2="12" />
   </svg>
 );
+
+export const Logo = (p: SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" {...p}>
+    <defs>
+      <linearGradient id="logo-strand-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#064e3b" />
+        <stop offset="35%" stopColor="#0f766e" />
+        <stop offset="70%" stopColor="#10b981" />
+        <stop offset="100%" stopColor="#a7f3d0" />
+      </linearGradient>
+      <radialGradient id="logo-center-glow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#ffffff" />
+        <stop offset="35%" stopColor="#cfffec" />
+        <stop offset="70%" stopColor="#10b981" stopOpacity="0.5" />
+        <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    <g>
+      {Array.from({ length: 12 }).map((_, i) => (
+        <path
+          key={i}
+          d="M 50 6 C 74 6, 94 28, 94 50 C 94 72, 78 90, 58 90 C 42 90, 26 74, 30 54 C 34 38, 48 30, 58 38 C 66 44, 60 56, 52 56 C 46 56, 44 48, 50 48"
+          stroke="url(#logo-strand-grad)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          opacity={0.8}
+          transform={`rotate(${i * 30} 50 50)`}
+        />
+      ))}
+    </g>
+    <circle cx="50" cy="50" r="16" fill="url(#logo-center-glow)" />
+  </svg>
+);
+

@@ -67,7 +67,7 @@ function AuthShell({ title, sub, cta, foot, to }: { title: string; sub: string; 
       <Glow className="-top-40 -right-32" />
       <div className="w-full max-w-sm relative">
         <Link to="/" className="flex items-center gap-2 justify-center mb-6">
-          <span className="w-9 h-9 rounded-[10px] bg-emerald-600 grid place-items-center shadow-soft"><I.Sparkle width={18} height={18} fill="#fff" /></span>
+          <I.Logo className="w-9 h-9" />
           <span className="font-display font-bold text-lg">KaliGanAI</span>
         </Link>
         <div className="card p-7">
@@ -234,9 +234,7 @@ export function MarketingShell() {
       <header className="sticky top-0 z-30 backdrop-blur-md bg-canvas/80 border-b border-line/75">
         <div className="flex items-center gap-6 px-6 md:px-8 py-3.5 max-w-6xl mx-auto">
           <Link to="/" className="flex items-center gap-2 mr-2">
-            <span className="w-8 h-8 rounded-[9px] bg-emerald-600 grid place-items-center shadow-soft">
-              <I.Sparkle width={16} height={16} fill="#fff" />
-            </span>
+            <I.Logo className="w-8 h-8" />
             <span className="font-display font-bold text-lg tracking-tight">KaliGanAI</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
@@ -284,7 +282,7 @@ export function MarketingShell() {
       <footer className="border-t border-line bg-surface-2">
         <div className="max-w-6xl mx-auto px-8 py-12 grid grid-cols-2 md:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-3"><span className="w-7 h-7 rounded-lg bg-emerald-600 grid place-items-center"><I.Sparkle width={14} height={14} fill="#fff" /></span><span className="font-display font-bold">KaliGanAI</span></div>
+            <div className="flex items-center gap-2 mb-3"><I.Logo className="w-7 h-7" /><span className="font-display font-bold">KaliGanAI</span></div>
             <p className="text-ink-muted text-[13px] leading-relaxed max-w-[230px]">The AI employee that turns website visitors into qualified leads — over chat and voice.</p>
           </div>
           {[["Product", ["Features", "/features"], ["Pricing", "/pricing"], ["Log in", "/login"]],

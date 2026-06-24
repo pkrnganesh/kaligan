@@ -12,7 +12,7 @@ import { Settings, Onboarding } from "./pages/Misc";
 import ChatAgents from "./pages/ChatAgents";
 import ChatAgentBuilder from "./pages/ChatAgentBuilder";
 import Calls from "./pages/Calls";
-import { Login, Signup, Forgot, MarketingShell, Home, Features, Pricing, About, Contact, Compare, MarketingPage, Blog, BlogPost } from "./Public";
+import { Login, Signup, Forgot, MarketingShell, Home, Features, Pricing, About, Contact, Compare, Blog, BlogPost } from "./Public";
 import { AuthProvider, useAuth } from "./lib/auth";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {

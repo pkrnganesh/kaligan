@@ -36,7 +36,7 @@ export default function AppShell() {
     <div className="grid grid-cols-[248px_1fr] min-h-screen">
       <aside className="bg-surface-2 border-r border-line flex flex-col p-[14px] gap-1.5 sticky top-0 h-screen">
         <button className="flex items-center gap-3 p-2.5 border border-line rounded-2xl bg-surface hover:border-mint-300 transition mb-2.5 text-left">
-          <span className="w-8 h-8 rounded-[9px] bg-emerald-600 grid place-items-center shrink-0"><I.Sparkle width={17} height={17} fill="#fff" /></span>
+          <I.Logo className="w-8 h-8 shrink-0" />
           <span className="flex-1 leading-tight"><span className="font-semibold text-sm block">{workspace?.name || "Acme Co"}</span><span className="text-ink-muted text-[11.5px]">kaliganai workspace</span></span>
           <I.Chevron className="text-ink-muted" />
         </button>
