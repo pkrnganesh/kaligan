@@ -509,14 +509,24 @@ export function Settings() {
             </div>
             <div>
               <label className="field-label font-semibold text-[13px] text-ink-muted">Brand color</label>
-              <div className="flex items-center gap-3 mt-1">
-                <input
-                  type="color"
-                  className="w-16 h-10 rounded-lg border border-line cursor-pointer"
-                  value={brandColor}
-                  onChange={(e) => setBrandColor(e.target.value)}
-                />
-                <span className="text-sm font-mono text-ink-muted">{brandColor}</span>
+              <div className="flex items-center gap-2 mt-1 max-w-[220px]">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    className="input w-full pl-3.5 pr-12 py-2 border border-line rounded-xl text-sm font-mono focus:border-teal-400 focus:outline-none"
+                    value={brandColor}
+                    onChange={(e) => setBrandColor(e.target.value)}
+                    required
+                  />
+                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg border border-line overflow-hidden flex items-center justify-center bg-white shadow-sm">
+                    <input
+                      type="color"
+                      className="absolute inset-0 w-[200%] h-[200%] -translate-x-[25%] -translate-y-[25%] cursor-pointer border-none p-0"
+                      value={brandColor.startsWith('#') && brandColor.length === 7 ? brandColor : '#0E7A5F'}
+                      onChange={(e) => setBrandColor(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <div className="pt-2">

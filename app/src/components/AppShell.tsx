@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Link, Outlet } from "react-router-dom";
 import type { ReactNode } from "react";
 import * as I from "./icons";
 import { useAuth } from "../lib/auth";
@@ -51,12 +51,21 @@ export default function AppShell() {
         <Item to="/app/knowledge" icon={<I.Book />} label="Knowledge Base" />
         <Item to="/app/chat-agent" icon={<I.Bot />} label="Chat Agent" />
         <Item to="/app/voice" icon={<I.Mic />} label="Voice Agents" badge="NEW" />
-        <Item to="/app/widget" icon={<I.Code />} label="Widget" />
 
         <div className="mt-auto flex flex-col gap-1.5">
-          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-emerald-50 border border-mint-300 text-[13px] font-semibold text-emerald-700">
-            <I.Check width={15} height={15} /> Setup complete
-            <span className="ml-auto flex gap-1">{[0,1,2,3,4].map(i => <i key={i} className="w-1.5 h-1.5 rounded-full bg-emerald-600" />)}</span>
+          <div className="bg-slate-50 border border-line/60 rounded-2xl p-3 text-left relative overflow-hidden mt-1.5 select-none mb-1">
+            <div className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+              <span>📖 Documentation</span>
+            </div>
+            <p className="text-[9.5px] text-ink-muted leading-relaxed mt-1">
+              Need help? Learn how to embed widgets and set up voice routes in minutes.
+            </p>
+            <Link 
+              to="/app/docs" 
+              className="text-[10px] text-emerald-700 font-bold hover:underline inline-flex items-center gap-0.5 mt-2 cursor-pointer"
+            >
+              Explore Docs <I.ArrowRight width={9} height={9} />
+            </Link>
           </div>
           <Item to="/app/settings" icon={<I.Cog />} label="Settings" />
           <button

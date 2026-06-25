@@ -7,11 +7,11 @@ import { Leads, LeadDetail } from "./pages/Leads";
 import Knowledge from "./pages/Knowledge";
 import VoiceAgents from "./pages/VoiceAgents";
 import VoiceAgentBuilder from "./pages/VoiceAgentBuilder";
-import Widget from "./pages/Widget";
 import { Settings, Onboarding } from "./pages/Misc";
 import ChatAgents from "./pages/ChatAgents";
 import ChatAgentBuilder from "./pages/ChatAgentBuilder";
 import Calls from "./pages/Calls";
+import Docs from "./pages/Docs";
 import { Login, Signup, Forgot, MarketingShell, Home, Features, Pricing, About, Contact, Compare, Blog, BlogPost } from "./Public";
 import { AuthProvider, useAuth } from "./lib/auth";
 
@@ -112,8 +112,8 @@ export default function App() {
           <Route path="voice" element={<VoiceAgents />} />
           <Route path="voice/:id" element={<VoiceAgentBuilder />} />
           <Route path="calls" element={<Calls />} />
-          <Route path="widget" element={<Widget />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="docs" element={<Docs />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
