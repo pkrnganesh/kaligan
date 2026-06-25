@@ -12,6 +12,7 @@ import ChatAgents from "./pages/ChatAgents";
 import ChatAgentBuilder from "./pages/ChatAgentBuilder";
 import Calls from "./pages/Calls";
 import Docs from "./pages/Docs";
+import AgentStudio from "./pages/AgentStudio";
 import { Login, Signup, Forgot, MarketingShell, Home, Features, Pricing, About, Contact, Compare, Blog, BlogPost } from "./Public";
 import { AuthProvider, useAuth } from "./lib/auth";
 
@@ -114,6 +115,7 @@ export default function App() {
           <Route path="calls" element={<Calls />} />
           <Route path="settings" element={<Settings />} />
           <Route path="docs" element={<Docs />} />
+          <Route path="studio" element={<AgentStudio />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

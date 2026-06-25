@@ -51,6 +51,7 @@ export default function AppShell() {
         <Item to="/app/knowledge" icon={<I.Book />} label="Knowledge Base" />
         <Item to="/app/chat-agent" icon={<I.Bot />} label="Chat Agent" />
         <Item to="/app/voice" icon={<I.Mic />} label="Voice Agents" badge="NEW" />
+        <Item to="/app/studio" icon={<I.Sparkle />} label="Employee Studio" badge="BETA" />
 
         <div className="mt-auto flex flex-col gap-1.5">
           <div className="bg-slate-50 border border-line/60 rounded-2xl p-3 text-left relative overflow-hidden mt-1.5 select-none mb-1">
