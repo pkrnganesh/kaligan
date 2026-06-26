@@ -41,6 +41,6 @@ export const LogOut = (p: SVGProps<SVGSVGElement>) => (
 );
 
 export const Logo = ({ className, ...p }: { className?: string } & any) => (
-  <img src="/logo.jpg" alt="KaliGanAI Logo" className={`${className || ""} rounded-xl object-contain`} {...p} />
+  <img src="/logo.png" alt="KaliGanAI Logo" className={`${className || ""} rounded-xl object-contain`} {...p} />
 );
 
